@@ -4,10 +4,20 @@ import 'package:http/http.dart' as http;
 final String API_URL = "https://indev.ctec.lk/wuusu_shop_ctec/public/api";
 
 class ApiCall {
+  String? _token = null;
+
   ApiCall() {}
 
+  setToken(String token) {
+    this._token = token;
+  }
+
+  ApiRequest get(String path) {
+    return ApiRequest(path: path, method: "GET", token: _token);
+  }
+
   ApiRequest post(String path) {
-    return ApiRequest(path: path, method: "POST");
+    return ApiRequest(path: path, method: "POST", token: _token);
   }
 }
 
@@ -24,47 +34,64 @@ class ApiRequest {
 
   Map<String, String> _data = {};
 
-  ApiRequest({required this.path, required this.method});
+  ApiRequest({required this.path, required this.method, token}) {
+    if (token != null) {
+      _headers["Authorization"] = 'Bearer $token';
+    }
+  }
 
-  ApiRequest param(String name, String value) {
-    this._params[name] = value;
+  ApiRequest param(String name, dynamic value) {
+    _params[name] = value.toString();
     return this;
   }
 
   ApiRequest data(String name, String value) {
-    this._data[name] = value;
+    _data[name] = value;
     return this;
   }
 
-  call({required success, required error}) {
+  Future<Map?> call() async {
+    Map? data = await _call();
+    return data;
+  }
+
+  Future<void> on({required success, required error}) async {
+    try {
+      Map? data = await _call();
+      success(data);
+    } catch (e) {
+      error(e.toString());
+    }
+  }
+
+  Future<Map?> _call() async {
     Request request = Request(
         path: path,
         params: this._params,
         headers: this._headers,
         data: this._data);
 
-    request.call(method, (http.StreamedResponse? response) async {
-      if (response == null) {
-        error("Request failed! Unknown error.");
-        return;
+    http.StreamedResponse? response = await request.call(method);
+
+    if (response == null) {
+      throw Exception("Request failed! Unknown error.");
+    }
+
+    String str = await response.stream.bytesToString();
+
+    try {
+      Map map = json.decode(str);
+
+      if (map["status"] == "success") {
+        return map["data"];
+      } else if (map["status"] == "error") {
+        throw Exception(map["message"]);
+      } else {
+        throw Exception("Undefinded status!");
       }
-
-      String str = await response.stream.bytesToString();
-
-      try {
-        Map map = json.decode(str);
-
-        if (map["status"] == "success") {
-          success(map["data"]);
-        } else if (map["status"] == "error") {
-          error(map["message"]);
-        } else {
-          error("Undefinded status!");
-        }
-      } catch (e) {
-        error("Response can't decode!");
-      }
-    });
+    } catch (e) {
+      throw Exception("Response can't decode!");
+    }
   }
 }
 
@@ -80,22 +107,34 @@ class Request {
       required this.headers,
       required this.data});
 
-  Future<void> call(method, cb) async {
+  Future<http.StreamedResponse?> call(method) async {
     switch (method) {
+      case "GET":
+        return this.makeGet();
       case "POST":
-        this.makePost(cb);
-        break;
+        return this.makePost();
+    }
+  }
+
+  //### GET
+  Future<http.StreamedResponse?> makeGet() async {
+    try {
+      var request = http.Request('GET', getRequestUri());
+
+      request.headers.addAll(headers);
+
+      http.StreamedResponse response = await request.send();
+
+      return response;
+    } catch (e) {
+      return null;
     }
   }
 
   //### POST
-  Future<void> makePost(cb) async {
+  Future<http.StreamedResponse?> makePost() async {
     try {
-      var request = http.MultipartRequest(
-          'POST',
-          Uri.parse(params.isEmpty
-              ? API_URL + path
-              : API_URL + path + "?" + Uri(queryParameters: params).query));
+      var request = http.MultipartRequest('POST', getRequestUri());
 
       request.fields.addAll(data);
 
@@ -103,9 +142,15 @@ class Request {
 
       http.StreamedResponse response = await request.send();
 
-      cb(response);
+      return response;
     } catch (e) {
-      cb(null);
+      return null;
     }
+  }
+
+  Uri getRequestUri() {
+    return Uri.parse(params.isEmpty
+        ? API_URL + path
+        : API_URL + path + "?" + Uri(queryParameters: params).query);
   }
 }

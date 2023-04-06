@@ -24,9 +24,8 @@ class _LoginScreenState extends State<LoginScreen> {
       isLogging = true;
     });
 
-    apiCall.post("/login").data("email", email).data("password", password).call(
+    apiCall.post("/login").data("email", email).data("password", password).on(
         success: (Map? data) async {
-      //print(data!["token"]);
       await storage.save("token", data!["token"]);
       openHomeScreen(context, data["user"]);
     }, error: (String msg) {
@@ -80,7 +79,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   color: Colors.grey.withAlpha(100),
                 ),
                 child: isLogging
-                    ? Center(
+                    ? const Center(
                         child: CircularProgressIndicator(),
                       )
                     : Column(
@@ -160,7 +159,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                           ),
-                          SizedBox(
+                          const SizedBox(
                             height: 10,
                           )
                         ],

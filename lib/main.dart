@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:wuusu_shop_client/screens/home.dart';
 import 'package:wuusu_shop_client/storage.dart';
-//import 'package:window_utils/window_utils.dart';
 import './screens/login.dart';
 import 'apicall.dart';
 
 void main() {
-  //WindowUtils.setSize(Size(400, 300));
   runApp(const MyApp());
 }
 
@@ -38,10 +36,21 @@ class _MyHomePageState extends State<MyHomePage> {
   ApiCall apiCall = ApiCall();
   Storage storage = Storage();
 
-  Future<bool> checkIsLogged() async {
-    String? s = await storage.read("token");
-    if (s != null) return true;
-    return false;
+  Future<Map?> checkIsLogged() async {
+    /*String? token = await storage.read("token");
+
+    if (token == null) return null;
+
+    apiCall.setToken(token);
+
+    try {
+      Map? data = await apiCall.get("/me").call();
+      return data!["user"];
+    } catch (e) {
+      return null;
+    }*/
+
+    return {};
   }
 
   @override
@@ -58,12 +67,12 @@ class _MyHomePageState extends State<MyHomePage> {
               child: CircularProgressIndicator(),
             );
           } else {
-            bool? logged = snapshot.data;
+            Map? user = snapshot.data;
 
-            if (logged == true) {
+            if (user != null) {
               return HomeScreen(
                 apiCall: apiCall,
-                user: {},
+                user: user,
               );
             } else {
               return LoginScreen();
