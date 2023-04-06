@@ -237,6 +237,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.0"
+  tabbed_view:
+    dependency: "direct main"
+    description:
+      name: tabbed_view
+      sha256: dfe40dc579f92cb421b51310a6320cf3239492ed5b198f1a290c81726b2a33c8
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.16.0+1"
   term_glyph:
     dependency: transitive
     description:

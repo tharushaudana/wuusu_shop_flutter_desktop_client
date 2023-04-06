@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wuusu_shop_client/apicall.dart';
+import 'package:wuusu_shop_client/screens/inventory/inventory.dart';
 
 class HomeScreen extends StatefulWidget {
   final ApiCall apiCall;
@@ -19,6 +20,8 @@ class _HomeScreenState extends State<HomeScreen> {
     ["Make", Icons.create],
     ["Users", Icons.group]
   ];
+
+  int selectedSideMenuItem = -1;
 
   test() async {
     try {
@@ -41,12 +44,60 @@ class _HomeScreenState extends State<HomeScreen> {
               user: {'name': 'Tharusha Udana', 'id': '01'},
               sideMenuItems: sideMenuItems,
               onItemClick: (int i) {
-                print(i);
+                setState(() {
+                  selectedSideMenuItem = i;
+                });
               },
               onLogoutClick: () {
                 test();
               }),
-          Text("hello")
+          selectedSideMenuItem == -1
+              ? Expanded(
+                  child: Container(
+                    padding: EdgeInsets.all(20),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "WUUSU FASHION DESKTOP",
+                          style: TextStyle(
+                              color: Colors.grey.withOpacity(0.5),
+                              fontSize: 40,
+                              fontWeight: FontWeight.bold),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          "version 1.0",
+                          style: TextStyle(
+                            color: Colors.grey.withOpacity(0.5),
+                            fontSize: 15,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        )
+                      ],
+                    ),
+                  ),
+                )
+              : Expanded(
+                  child: Column(
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      color: Colors.grey.withAlpha(100),
+                      child: Text(
+                        sideMenuItems[selectedSideMenuItem][0],
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    Expanded(
+                        child: selectedSideMenuItem == 0
+                            ? InventoryScreen()
+                            : Container()),
+                  ],
+                )),
         ],
       )),
     );
@@ -92,10 +143,10 @@ class _SideMenuState extends State<SideMenu> {
       child: AnimatedContainer(
         duration: Duration(milliseconds: 200),
         curve: Curves.easeInOut,
-        width: isSideMenuHovered ? 200 : 70,
+        width: isSideMenuHovered ? 200 : 71,
         decoration: BoxDecoration(
-          color: Colors.grey.withAlpha(100),
-        ),
+            color: Colors.grey.withAlpha(100),
+            border: Border(right: BorderSide(width: 1, color: Colors.grey))),
         padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
