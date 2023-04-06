@@ -18,6 +18,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
+      //theme: ThemeData.dark(),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
@@ -37,13 +38,13 @@ class _MyHomePageState extends State<MyHomePage> {
   Storage storage = Storage();
 
   Future<Map?> checkIsLogged() async {
-    /*String? token = await storage.read("token");
+    String? token = await storage.read("token");
 
     if (token == null) return null;
 
     apiCall.setToken(token);
 
-    try {
+    /*try {
       Map? data = await apiCall.get("/me").call();
       return data!["user"];
     } catch (e) {
