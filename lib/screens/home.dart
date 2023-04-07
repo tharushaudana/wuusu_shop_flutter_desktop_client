@@ -41,10 +41,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(Object context) {
     return Scaffold(
       body: Container(
-          child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SideMenu(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SideMenu(
               user: {'name': 'Tharusha Udana', 'id': '01'},
               sideMenuItems: sideMenuItems,
               onItemClick: (int i) {
@@ -54,58 +54,68 @@ class _HomeScreenState extends State<HomeScreen> {
               },
               onLogoutClick: () {
                 test();
-              }),
-          selectedSideMenuItem == -1
-              ? Expanded(
-                  child: Container(
-                    padding: EdgeInsets.all(20),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "WUUSU FASHION DESKTOP",
-                          style: TextStyle(
+              },
+            ),
+            selectedSideMenuItem == -1
+                ? Expanded(
+                    child: Container(
+                      padding: EdgeInsets.all(20),
+                      color: Colors.amber.withOpacity(0.2),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "WUUSU FASHION DESKTOP",
+                            style: TextStyle(
                               color: Colors.grey.withOpacity(0.5),
                               fontSize: 40,
-                              fontWeight: FontWeight.bold),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        Text(
-                          "version 1.0",
-                          style: TextStyle(
-                            color: Colors.grey.withOpacity(0.5),
-                            fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          overflow: TextOverflow.ellipsis,
-                        )
+                          Text(
+                            "version 1.0",
+                            style: TextStyle(
+                              color: Colors.grey.withOpacity(0.5),
+                              fontSize: 15,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : Expanded(
+                    child: Column(
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 10,
+                          ),
+                          color: Colors.amber.withAlpha(100),
+                          child: Text(
+                            sideMenuItems[selectedSideMenuItem][0],
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: selectedSideMenuItem == 0
+                              ? InventoryScreen(
+                                  apiCall: widget.apiCall,
+                                )
+                              : Container(),
+                        ),
                       ],
                     ),
                   ),
-                )
-              : Expanded(
-                  child: Column(
-                  children: [
-                    Container(
-                      width: double.infinity,
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                      color: Colors.grey.withAlpha(100),
-                      child: Text(
-                        sideMenuItems[selectedSideMenuItem][0],
-                        style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    Expanded(
-                        child: selectedSideMenuItem == 0
-                            ? InventoryScreen(
-                                apiCall: widget.apiCall,
-                              )
-                            : Container()),
-                  ],
-                )),
-        ],
-      )),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -153,8 +163,11 @@ class _SideMenuState extends State<SideMenu> {
         curve: Curves.easeInOut,
         width: isSideMenuHovered ? 200 : 71,
         decoration: BoxDecoration(
-            color: Colors.grey.withAlpha(100),
-            border: Border(right: BorderSide(width: 1, color: Colors.grey))),
+          color: Colors.amber.withAlpha(100),
+          border: Border(
+            right: BorderSide(width: 1, color: Colors.amber),
+          ),
+        ),
         padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -213,27 +226,30 @@ class _SideMenuState extends State<SideMenu> {
                     decoration: BoxDecoration(
                       color: selectedSideMenuItem == i
                           ? Colors.blue
-                          : Colors.grey.withOpacity(selectedSideMenuItem != i &&
-                                  hoveredSideMenuItem == i
-                              ? 1
-                              : 0.5),
+                          : Colors.amber.withOpacity(
+                              selectedSideMenuItem != i &&
+                                      hoveredSideMenuItem == i
+                                  ? 1
+                                  : 0.5),
                       borderRadius: BorderRadius.circular(50),
                     ),
-                    child: Row(children: [
-                      Icon(
-                        widget.sideMenuItems[i][1],
-                      ),
-                      Expanded(
-                        child: Container(
-                          margin: EdgeInsets.only(left: 10),
-                          child: Text(
-                            widget.sideMenuItems[i][0],
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                            overflow: TextOverflow.ellipsis,
+                    child: Row(
+                      children: [
+                        Icon(
+                          widget.sideMenuItems[i][1],
+                        ),
+                        Expanded(
+                          child: Container(
+                            margin: EdgeInsets.only(left: 10),
+                            child: Text(
+                              widget.sideMenuItems[i][0],
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                         ),
-                      )
-                    ]),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -256,13 +272,16 @@ class _SideMenuState extends State<SideMenu> {
                     padding: EdgeInsets.all(12),
                     margin: EdgeInsets.only(bottom: 10),
                     decoration: BoxDecoration(
-                        color: Colors.grey
-                            .withOpacity(isThemeModeChangerHovered ? 0.5 : 0),
-                        borderRadius: BorderRadius.circular(50)),
+                      color: Colors.grey
+                          .withOpacity(isThemeModeChangerHovered ? 0.5 : 0),
+                      borderRadius: BorderRadius.circular(50),
+                    ),
                     child: Row(children: [
-                      Icon(notifier.isDarkMode
-                          ? Icons.dark_mode
-                          : Icons.light_mode),
+                      Icon(
+                        notifier.isDarkMode
+                            ? Icons.dark_mode
+                            : Icons.light_mode,
+                      ),
                       Expanded(
                         child: Container(
                           margin: EdgeInsets.only(left: 10),
@@ -295,22 +314,25 @@ class _SideMenuState extends State<SideMenu> {
                   padding: EdgeInsets.all(12),
                   margin: EdgeInsets.only(bottom: 10),
                   decoration: BoxDecoration(
-                      color:
-                          Colors.red.withOpacity(isLogoutItemHovered ? 1 : 0.5),
-                      borderRadius: BorderRadius.circular(50)),
-                  child: Row(children: [
-                    Icon(Icons.logout),
-                    Expanded(
-                      child: Container(
-                        margin: EdgeInsets.only(left: 10),
-                        child: Text(
-                          "Logout",
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                          overflow: TextOverflow.ellipsis,
+                    color:
+                        Colors.red.withOpacity(isLogoutItemHovered ? 1 : 0.5),
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.logout),
+                      Expanded(
+                        child: Container(
+                          margin: EdgeInsets.only(left: 10),
+                          child: Text(
+                            "Logout",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ),
-                    )
-                  ]),
+                    ],
+                  ),
                 ),
               ),
             )

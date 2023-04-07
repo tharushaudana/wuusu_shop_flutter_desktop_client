@@ -45,8 +45,17 @@ class ApiRequest {
     return this;
   }
 
-  ApiRequest data(String name, String value) {
-    _data[name] = value;
+  ApiRequest data(String name, dynamic value) {
+    switch (value.runtimeType) {
+      case String:
+        _data[name] = value;
+        return this;
+      case Map:
+        Map map = value;
+        map.map((key, value) => _data[key] = value);
+        return this;
+    }
+
     return this;
   }
 
@@ -78,6 +87,8 @@ class ApiRequest {
     }
 
     String str = await response.stream.bytesToString();
+
+    //print(str);
 
     try {
       Map map = json.decode(str);

@@ -24,25 +24,27 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
     List<TabData> tabs = [];
 
-    tabs.add(TabData(
+    tabs.add(
+      TabData(
         closable: false,
         text: 'Products',
-        content: Padding(
-            child: TabProducts(
-              apiCall: widget.apiCall,
-            ),
-            padding: EdgeInsets.all(10)),
-        keepAlive: true));
+        content: TabProducts(
+          apiCall: widget.apiCall,
+        ),
+        keepAlive: true,
+      ),
+    );
 
-    tabs.add(TabData(
+    tabs.add(
+      TabData(
         closable: false,
         text: 'Materials',
-        content: Padding(
-            child: TabMaterials(
-              apiCall: widget.apiCall,
-            ),
-            padding: EdgeInsets.all(10)),
-        keepAlive: true));
+        content: TabMaterials(
+          apiCall: widget.apiCall,
+        ),
+        keepAlive: true,
+      ),
+    );
 
     _controller = TabbedViewController(tabs);
   }
@@ -51,10 +53,11 @@ class _InventoryScreenState extends State<InventoryScreen> {
   Widget build(BuildContext context) {
     TabbedView tabbedView = TabbedView(controller: _controller);
     Widget w = TabbedViewTheme(
-        child: tabbedView,
-        data: Provider.of<ThemeModeNotifier>(context).isDarkMode
-            ? TabbedViewThemeData.dark()
-            : TabbedViewThemeData.mobile());
+      child: tabbedView,
+      data: Provider.of<ThemeModeNotifier>(context).isDarkMode
+          ? TabbedViewThemeData.dark()
+          : TabbedViewThemeData.mobile(colorSet: Colors.amber),
+    );
 
     return Container(width: double.infinity, height: double.infinity, child: w);
   }
