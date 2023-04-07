@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:wuusu_shop_client/apicall.dart';
 
 class TabMaterials extends StatefulWidget {
+  final ApiCall apiCall;
+
+  TabMaterials({required this.apiCall});
+
   @override
   State<StatefulWidget> createState() => _TabMaterialsState();
 }

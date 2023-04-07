@@ -27,6 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
     apiCall.post("/login").data("email", email).data("password", password).on(
         success: (Map? data) async {
       await storage.save("token", data!["token"]);
+      apiCall.setToken(data["token"]);
       openHomeScreen(context, data["user"]);
     }, error: (String msg) {
       setState(() {

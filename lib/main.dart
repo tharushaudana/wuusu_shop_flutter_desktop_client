@@ -1,11 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:wuusu_shop_client/screens/home.dart';
 import 'package:wuusu_shop_client/storage.dart';
 import './screens/login.dart';
 import 'apicall.dart';
 
-void main() {
-  runApp(const MyApp());
+Storage storage = Storage();
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  String? mode = await storage.read("thememode");
+
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeModeNotifier(mode != null ? mode : 'dark'),
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -15,11 +27,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      //theme: ThemeData.dark(),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      theme: Provider.of<ThemeModeNotifier>(context).isDarkMode
+          ? ThemeData.dark()
+          : ThemeData(
+              primarySwatch: Colors.blue,
+            ),
+      home: const MyHomePage(title: 'Wuusu Fashion Desktop Client'),
     );
   }
 }
@@ -34,8 +47,9 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  String themeMode = 'dark';
+
   ApiCall apiCall = ApiCall();
-  Storage storage = Storage();
 
   Future<Map?> checkIsLogged() async {
     String? token = await storage.read("token");
@@ -82,5 +96,33 @@ class _MyHomePageState extends State<MyHomePage> {
         },
       )),
     );
+  }
+}
+
+class ThemeModeNotifier extends ChangeNotifier {
+  Storage storage = Storage();
+
+  bool _isDarkMode = true;
+
+  bool get isDarkMode => _isDarkMode;
+
+  ThemeModeNotifier(String savedThemeMode) {
+    //setSavedThemeMode();
+    _isDarkMode = savedThemeMode == 'dark';
+  }
+
+  void toggleThemeMode() {
+    _isDarkMode = !_isDarkMode;
+    storage.save('thememode', _isDarkMode ? 'dark' : 'light');
+    notifyListeners();
+  }
+
+  void setSavedThemeMode() async {
+    String? mode = await storage.read("thememode");
+
+    if (mode == null) return;
+
+    _isDarkMode = mode == 'dark';
+    notifyListeners();
   }
 }

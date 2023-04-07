@@ -90,7 +90,7 @@ class ApiRequest {
         throw Exception("Undefinded status!");
       }
     } catch (e) {
-      throw Exception("Response can't decode!");
+      throw Exception(e.toString());
     }
   }
 }

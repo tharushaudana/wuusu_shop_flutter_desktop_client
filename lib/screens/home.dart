@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:wuusu_shop_client/apicall.dart';
+import 'package:wuusu_shop_client/main.dart';
 import 'package:wuusu_shop_client/screens/inventory/inventory.dart';
 
 class HomeScreen extends StatefulWidget {
   final ApiCall apiCall;
   final Map user;
 
-  HomeScreen({required this.apiCall, required this.user});
+  HomeScreen({
+    required this.apiCall,
+    required this.user,
+  });
 
   @override
   State<StatefulWidget> createState() => _HomeScreenState();
@@ -25,8 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   test() async {
     try {
-      Map? data =
-          await widget.apiCall.get("/products").param("page", "2").call();
+      Map? data = await widget.apiCall.get("/products").call();
       print(data);
     } catch (e) {
       print(e.toString());
@@ -94,7 +98,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     Expanded(
                         child: selectedSideMenuItem == 0
-                            ? InventoryScreen()
+                            ? InventoryScreen(
+                                apiCall: widget.apiCall,
+                              )
                             : Container()),
                   ],
                 )),
@@ -124,6 +130,8 @@ class _SideMenuState extends State<SideMenu> {
   bool isSideMenuHovered = false;
   int hoveredSideMenuItem = -1;
   int selectedSideMenuItem = -1;
+
+  bool isThemeModeChangerHovered = false;
 
   bool isLogoutItemHovered = false;
 
@@ -230,6 +238,46 @@ class _SideMenuState extends State<SideMenu> {
                 ),
               ),
             Spacer(),
+            //### Theme Mode Change
+            Consumer<ThemeModeNotifier>(
+              builder: (context, notifier, child) => MouseRegion(
+                onEnter: (event) => setState(() {
+                  isThemeModeChangerHovered = true;
+                }),
+                onExit: (event) => setState(() {
+                  isThemeModeChangerHovered = false;
+                }),
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  onTap: () {
+                    notifier.toggleThemeMode();
+                  },
+                  child: Container(
+                    padding: EdgeInsets.all(12),
+                    margin: EdgeInsets.only(bottom: 10),
+                    decoration: BoxDecoration(
+                        color: Colors.grey
+                            .withOpacity(isThemeModeChangerHovered ? 0.5 : 0),
+                        borderRadius: BorderRadius.circular(50)),
+                    child: Row(children: [
+                      Icon(notifier.isDarkMode
+                          ? Icons.dark_mode
+                          : Icons.light_mode),
+                      Expanded(
+                        child: Container(
+                          margin: EdgeInsets.only(left: 10),
+                          child: Text(
+                            notifier.isDarkMode ? "Dark" : "Light",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      )
+                    ]),
+                  ),
+                ),
+              ),
+            ),
             //### LOGOUT ITEM
             MouseRegion(
               onEnter: (event) => setState(() {
