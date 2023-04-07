@@ -49,7 +49,7 @@ class _TabProductsState extends State<TabProducts> {
       Map? data = await widget.apiCall.get("/products").call();
 
       productsDataSource =
-          ProductsDataSource(context: context, products: data!['products']);
+          ProductsDataSource(context: context, items: data!['products']);
 
       setState(() {
         isFetching = false;
@@ -57,7 +57,7 @@ class _TabProductsState extends State<TabProducts> {
         //print(products);
       });
     } catch (e) {
-      productsDataSource = ProductsDataSource(context: context, products: []);
+      productsDataSource = ProductsDataSource(context: context, items: []);
 
       setState(() {
         isFetching = false;
@@ -148,6 +148,39 @@ class _TabProductsState extends State<TabProducts> {
                               allowSorting: true,
                               allowMultiColumnSorting: true,
                               allowColumnsResizing: true,
+                              allowSwiping: true,
+                              swipeMaxOffset: 100.0,
+                              startSwipeActionsBuilder: (BuildContext context,
+                                  DataGridRow row, int rowIndex) {
+                                return Container(
+                                  child: Row(
+                                    children: [
+                                      Spacer(),
+                                      IconButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            productToUpdate =
+                                                productsDataSource.getItem(
+                                                    row.getCells()[0].value);
+                                            isRightSideMenuOpened = true;
+                                          });
+                                        },
+                                        color: Colors.blue,
+                                        icon: Icon(
+                                          Icons.edit,
+                                        ),
+                                      ),
+                                      IconButton(
+                                        onPressed: () {},
+                                        color: Colors.red,
+                                        icon: Icon(
+                                          Icons.delete,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
                               onColumnResizeUpdate:
                                   (ColumnResizeUpdateDetails details) {
                                 setState(() {
@@ -351,9 +384,13 @@ class _TabProductsState extends State<TabProducts> {
                   )
                 : DialogAdd(
                     apiCall: widget.apiCall,
-                    onDone: () {
-                      fetch(context);
+                    onAdded: (product) {
+                      productsDataSource.add(product);
                     },
+                    onUpdated: (product) {
+                      productsDataSource.update(product);
+                    },
+                    onDeleted: () {},
                     onClose: () {
                       setState(() {
                         isRightSideMenuOpened = false;
@@ -361,7 +398,7 @@ class _TabProductsState extends State<TabProducts> {
                     },
                     product: productToUpdate,
                   ),
-          )
+          ),
         ],
       ),
     );
@@ -371,13 +408,17 @@ class _TabProductsState extends State<TabProducts> {
 class DialogAdd extends StatefulWidget {
   final ApiCall apiCall;
   final Map? product;
-  final onDone;
+  final onAdded;
+  final onUpdated;
+  final onDeleted;
   final onClose;
 
   DialogAdd({
     required this.apiCall,
     required this.product,
-    required this.onDone,
+    required this.onAdded,
+    required this.onUpdated,
+    required this.onDeleted,
     required this.onClose,
   });
 
@@ -388,21 +429,62 @@ class DialogAdd extends StatefulWidget {
 class _DialogAddState extends State<DialogAdd> {
   final _formKey = GlobalKey<FormState>();
 
-  List inputs = [
-    ["itemcode", "Item Code", "string", ""],
-    ["description", "Description", "string", ""],
-    ["unit", "Unit", "string", ""],
-    ["minqty", "Minimum Qty", "number", ""],
-    ["max_retail_price", "Maximum Retail Price", "number", ""],
-    ["saler_discount_rate", "Saler Discount Rate", "number", ""],
-    ["profit_percent", "Profit Percentage", "number", ""],
-    ["price_matara", "Price Matara", "number", ""],
-    ["price_akuressa", "Price Akuressa", "number", ""],
-  ];
+  late List inputs;
 
   bool isValidated = false;
 
   bool isDoing = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    inputs = [
+      ["itemcode", "Item Code", "string", getAttrOfCurrentProduct('itemcode')],
+      [
+        "description",
+        "Description",
+        "string",
+        getAttrOfCurrentProduct('description')
+      ],
+      ["unit", "Unit", "string", getAttrOfCurrentProduct('unit')],
+      ["minqty", "Minimum Qty", "number", getAttrOfCurrentProduct('minqty')],
+      [
+        "max_retail_price",
+        "Maximum Retail Price",
+        "number",
+        getAttrOfCurrentProduct('max_retail_price')
+      ],
+      [
+        "saler_discount_rate",
+        "Saler Discount Rate",
+        "number",
+        getAttrOfCurrentProduct('saler_discount_rate')
+      ],
+      [
+        "profit_percent",
+        "Profit Percentage",
+        "number",
+        getAttrOfCurrentProduct('profit_percent')
+      ],
+      [
+        "price_matara",
+        "Price Matara",
+        "number",
+        getAttrOfCurrentProduct('price_matara')
+      ],
+      [
+        "price_akuressa",
+        "Price Akuressa",
+        "number",
+        getAttrOfCurrentProduct('price_akuressa')
+      ],
+    ];
+  }
+
+  String getAttrOfCurrentProduct(String name) {
+    return widget.product == null ? "" : widget.product![name];
+  }
 
   doAdd(Map product) async {
     setState(() {
@@ -410,14 +492,16 @@ class _DialogAddState extends State<DialogAdd> {
     });
 
     try {
-      await widget.apiCall.post('/products').data("", product).call();
+      Map? data =
+          await widget.apiCall.post('/products').data("", product).call();
 
       setState(() {
+        for (int i = 0; i < inputs.length; i++) inputs[i][3] = "";
+        isValidated = false;
         isDoing = false;
       });
 
-      widget.onDone();
-      widget.onClose();
+      widget.onAdded(data!['product']);
     } catch (e) {
       setState(() {
         isDoing = false;
@@ -427,7 +511,31 @@ class _DialogAddState extends State<DialogAdd> {
     }
   }
 
-  doUpdate(Map product) {}
+  doUpdate(Map product) async {
+    setState(() {
+      isDoing = true;
+    });
+
+    try {
+      Map? data = await widget.apiCall
+          .patch('/products/${product['id']}')
+          .data("", product)
+          .call();
+
+      setState(() {
+        isDoing = false;
+      });
+
+      widget.onAdded(data!['product']);
+      widget.onClose();
+    } catch (e) {
+      setState(() {
+        isDoing = false;
+      });
+
+      Alert.show("Unable to Add", e.toString(), context);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -520,7 +628,10 @@ class _DialogAddState extends State<DialogAdd> {
                             product[item[0]] = item[3];
                           });
 
-                          doAdd(product);
+                          if (widget.product == null) doAdd(product);
+
+                          product['id'] = widget.product!['id'];
+                          doUpdate(product);
                         }
                       : null,
                   child: Text(
@@ -556,37 +667,56 @@ class _DialogAddState extends State<DialogAdd> {
 
 class ProductsDataSource extends DataGridSource {
   final BuildContext context;
-  List<DataGridRow> _data = [];
+  List<dynamic> _items = [];
+  //List<DataGridRow> _data = [];
 
   @override
-  List<DataGridRow> get rows => _data;
+  List<DataGridRow> get rows => _items
+      .map<DataGridRow>((e) => DataGridRow(cells: [
+            DataGridCell(columnName: 'id', value: e['id']),
+            DataGridCell(columnName: 'itemcode', value: e['itemcode']),
+            DataGridCell(columnName: 'description', value: e['description']),
+            DataGridCell(columnName: 'unit', value: e['unit']),
+            DataGridCell(columnName: 'qty', value: e['qty']),
+            DataGridCell(columnName: 'minqty', value: e['minqty']),
+            DataGridCell(columnName: 'price_sale', value: [
+              e['price_sale'],
+              e['recomanded_price_sale'],
+              e['recomanded_profit_percent']
+            ]),
+            DataGridCell(
+                columnName: 'max_retail_price', value: e['max_retail_price']),
+            DataGridCell(
+                columnName: 'received_rate', value: e['received_rate']),
+            DataGridCell(
+                columnName: 'profit_percent', value: e['profit_percent']),
+            DataGridCell(columnName: 'price_matara', value: e['price_matara']),
+            DataGridCell(
+                columnName: 'price_akuressa', value: e['price_akuressa']),
+          ]))
+      .toList();
 
-  ProductsDataSource({required this.context, required List<dynamic> products}) {
-    _data = products
-        .map<DataGridRow>((e) => DataGridRow(cells: [
-              DataGridCell(columnName: 'id', value: e['id']),
-              DataGridCell(columnName: 'itemcode', value: e['itemcode']),
-              DataGridCell(columnName: 'description', value: e['description']),
-              DataGridCell(columnName: 'unit', value: e['unit']),
-              DataGridCell(columnName: 'qty', value: e['qty']),
-              DataGridCell(columnName: 'minqty', value: e['minqty']),
-              DataGridCell(columnName: 'price_sale', value: [
-                e['price_sale'],
-                e['recomanded_price_sale'],
-                e['recomanded_profit_percent']
-              ]),
-              DataGridCell(
-                  columnName: 'max_retail_price', value: e['max_retail_price']),
-              DataGridCell(
-                  columnName: 'received_rate', value: e['received_rate']),
-              DataGridCell(
-                  columnName: 'profit_percent', value: e['profit_percent']),
-              DataGridCell(
-                  columnName: 'price_matara', value: e['price_matara']),
-              DataGridCell(
-                  columnName: 'price_akuressa', value: e['price_akuressa']),
-            ]))
-        .toList();
+  ProductsDataSource({required this.context, required List<dynamic> items}) {
+    _items.clear();
+    _items.addAll(items);
+  }
+
+  add(Map item) {
+    //### Insert into Begin
+    _items.insertAll(0, [item]);
+    notifyListeners();
+  }
+
+  update(Map item) {}
+
+  Map? getItem(id) {
+    int index = findIndex(id);
+    if (index > -1) return _items[index];
+    return null;
+  }
+
+  int findIndex(id) {
+    return _items.indexWhere((element) => element['id'] == id);
   }
 
   @override

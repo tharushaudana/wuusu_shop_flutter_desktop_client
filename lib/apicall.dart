@@ -19,6 +19,10 @@ class ApiCall {
   ApiRequest post(String path) {
     return ApiRequest(path: path, method: "POST", token: _token);
   }
+
+  ApiRequest patch(String path) {
+    return ApiRequest(path: path, method: "PATCH", token: _token);
+  }
 }
 
 class ApiRequest {
@@ -27,7 +31,7 @@ class ApiRequest {
 
   Map<String, String> _headers = {
     "Accept": "application/vnd.api+json",
-    "Content-Type": "application/vnd.api+json",
+    //"Content-Type": "application/vnd.api+json",
   };
 
   Map<String, String> _params = {};
@@ -46,14 +50,13 @@ class ApiRequest {
   }
 
   ApiRequest data(String name, dynamic value) {
-    switch (value.runtimeType) {
-      case String:
-        _data[name] = value;
-        return this;
-      case Map:
-        Map map = value;
-        map.map((key, value) => _data[key] = value);
-        return this;
+    if (value is String) {
+      _data[name] = value;
+      return this;
+    } else if (value is Map) {
+      Map map = value;
+      map.forEach((mkey, mvalue) => _data[mkey] = mvalue.toString());
+      return this;
     }
 
     return this;
@@ -88,7 +91,7 @@ class ApiRequest {
 
     String str = await response.stream.bytesToString();
 
-    //print(str);
+    print(str);
 
     try {
       Map map = json.decode(str);
@@ -101,7 +104,7 @@ class ApiRequest {
         throw Exception("Undefinded status!");
       }
     } catch (e) {
-      throw Exception(e.toString());
+      throw Exception(e);
     }
   }
 }
@@ -124,11 +127,15 @@ class Request {
         return this.makeGet();
       case "POST":
         return this.makePost();
+      case "PATCH":
+        return this.makePatch();
     }
   }
 
   //### GET
   Future<http.StreamedResponse?> makeGet() async {
+    headers['Content-Type'] = 'application/vnd.api+json';
+
     try {
       var request = http.Request('GET', getRequestUri());
 
@@ -144,10 +151,31 @@ class Request {
 
   //### POST
   Future<http.StreamedResponse?> makePost() async {
+    headers['Content-Type'] = 'application/vnd.api+json';
+
     try {
       var request = http.MultipartRequest('POST', getRequestUri());
 
       request.fields.addAll(data);
+
+      request.headers.addAll(headers);
+
+      http.StreamedResponse response = await request.send();
+
+      return response;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  //### PATCH
+  Future<http.StreamedResponse?> makePatch() async {
+    headers['Content-Type'] = 'application/x-www-form-urlencoded';
+
+    try {
+      var request = http.Request('PATCH', getRequestUri());
+
+      request.bodyFields = data;
 
       request.headers.addAll(headers);
 
