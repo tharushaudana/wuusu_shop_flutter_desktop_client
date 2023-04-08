@@ -23,6 +23,10 @@ class ApiCall {
   ApiRequest patch(String path) {
     return ApiRequest(path: path, method: "PATCH", token: _token);
   }
+
+  ApiRequest delete(String path) {
+    return ApiRequest(path: path, method: "DELETE", token: _token);
+  }
 }
 
 class ApiRequest {
@@ -86,25 +90,32 @@ class ApiRequest {
     http.StreamedResponse? response = await request.call(method);
 
     if (response == null) {
-      throw Exception("Request failed! Unknown error.");
+      throw ApiException("Request failed. Unknown error!");
     }
 
     String str = await response.stream.bytesToString();
 
-    print(str);
+    //print(str);
+
+    Map jmap = {};
 
     try {
-      Map map = json.decode(str);
-
-      if (map["status"] == "success") {
-        return map["data"];
-      } else if (map["status"] == "error") {
-        throw Exception(map["message"]);
-      } else {
-        throw Exception("Undefinded status!");
-      }
+      jmap = json.decode(str);
     } catch (e) {
-      throw Exception(e);
+      throw ApiException("Invalid response. Can't decode!");
+    }
+
+    if (jmap["status"] == "success") {
+      return jmap["data"];
+    } else if (jmap["status"] == "error") {
+      Map? errors = jmap["errors"];
+
+      if (errors == null) throw ApiException(jmap["message"]);
+
+      throw ApiException(errors[errors.keys.first][0]
+          .toString()); //### throw first error of errors.
+    } else {
+      throw ApiException("Invalid response. Can't find expected status!");
     }
   }
 }
@@ -129,6 +140,8 @@ class Request {
         return this.makePost();
       case "PATCH":
         return this.makePatch();
+      case "DELETE":
+        return this.makeDelete();
     }
   }
 
@@ -187,9 +200,39 @@ class Request {
     }
   }
 
+  //### DELETE
+  Future<http.StreamedResponse?> makeDelete() async {
+    //headers['Content-Type'] = 'application/vnd.api+json'; //### using this without passing data, will come error from server
+
+    try {
+      var request = http.Request('DELETE', getRequestUri());
+
+      //request.bodyFields = data;
+
+      request.headers.addAll(headers);
+
+      http.StreamedResponse response = await request.send();
+
+      return response;
+    } catch (e) {
+      return null;
+    }
+  }
+
   Uri getRequestUri() {
     return Uri.parse(params.isEmpty
         ? API_URL + path
         : API_URL + path + "?" + Uri(queryParameters: params).query);
+  }
+}
+
+class ApiException implements Exception {
+  String msg;
+
+  ApiException(this.msg) {}
+
+  @override
+  String toString() {
+    return msg;
   }
 }

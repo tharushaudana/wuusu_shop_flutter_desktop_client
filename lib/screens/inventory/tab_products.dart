@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:wuusu_shop_client/alert.dart';
@@ -17,7 +15,6 @@ class TabProducts extends StatefulWidget {
 class _TabProductsState extends State<TabProducts> {
   bool isFetching = false;
 
-  List<dynamic> products = [];
   late ProductsDataSource productsDataSource;
 
   late Map<String, double> columnWidths = {
@@ -53,8 +50,6 @@ class _TabProductsState extends State<TabProducts> {
 
       setState(() {
         isFetching = false;
-        //products = data!['products'];
-        //print(products);
       });
     } catch (e) {
       productsDataSource = ProductsDataSource(context: context, items: []);
@@ -63,7 +58,7 @@ class _TabProductsState extends State<TabProducts> {
         isFetching = false;
       });
 
-      Alert.show("Fetching failed!", e.toString(), context);
+      Alert.show("Fetching Failed", e.toString(), context);
     }
 
     addFilters(searchValue);
@@ -89,6 +84,19 @@ class _TabProductsState extends State<TabProducts> {
           value: value.toString(),
         ),
       );
+    }
+  }
+
+  doDelete(id, dialog) async {
+    dialog.showProgressIndicator(true);
+
+    try {
+      Map? data = await widget.apiCall.delete('/products/$id').call();
+      dialog.close();
+      productsDataSource.delete(id);
+    } catch (e) {
+      dialog.close();
+      Alert.show("Unable to Delete!", e.toString(), context);
     }
   }
 
@@ -171,7 +179,17 @@ class _TabProductsState extends State<TabProducts> {
                                         ),
                                       ),
                                       IconButton(
-                                        onPressed: () {},
+                                        onPressed: () {
+                                          Alert.showConfirm(
+                                            'Delete Product #${row.getCells()[1].value}',
+                                            "Are you sure?",
+                                            context,
+                                            (dialog) {
+                                              doDelete(row.getCells()[0].value,
+                                                  dialog);
+                                            },
+                                          );
+                                        },
                                         color: Colors.red,
                                         icon: Icon(
                                           Icons.delete,
@@ -435,6 +453,61 @@ class _DialogAddState extends State<DialogAdd> {
 
   bool isDoing = false;
 
+  String getAttrOfCurrentProduct(String name) {
+    return widget.product == null ? "" : widget.product![name];
+  }
+
+  doAdd(Map product) async {
+    setState(() {
+      isDoing = true;
+    });
+
+    try {
+      Map? data =
+          await widget.apiCall.post('/products').data("", product).call();
+
+      setState(() {
+        for (int i = 0; i < inputs.length; i++) inputs[i][3] = "";
+        isValidated = false;
+        isDoing = false;
+      });
+
+      widget.onAdded(data!['product']);
+    } catch (e) {
+      setState(() {
+        isDoing = false;
+      });
+
+      Alert.show("Unable to Add", e.toString(), context);
+    }
+  }
+
+  doUpdate(Map product) async {
+    setState(() {
+      isDoing = true;
+    });
+
+    try {
+      Map? data = await widget.apiCall
+          .patch('/products/${product['id']}')
+          .data("", product)
+          .call();
+
+      setState(() {
+        isDoing = false;
+      });
+
+      widget.onUpdated(data!['product']);
+      widget.onClose();
+    } catch (e) {
+      setState(() {
+        isDoing = false;
+      });
+
+      Alert.show("Unable to Update", e.toString(), context);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -480,61 +553,6 @@ class _DialogAddState extends State<DialogAdd> {
         getAttrOfCurrentProduct('price_akuressa')
       ],
     ];
-  }
-
-  String getAttrOfCurrentProduct(String name) {
-    return widget.product == null ? "" : widget.product![name];
-  }
-
-  doAdd(Map product) async {
-    setState(() {
-      isDoing = true;
-    });
-
-    try {
-      Map? data =
-          await widget.apiCall.post('/products').data("", product).call();
-
-      setState(() {
-        for (int i = 0; i < inputs.length; i++) inputs[i][3] = "";
-        isValidated = false;
-        isDoing = false;
-      });
-
-      widget.onAdded(data!['product']);
-    } catch (e) {
-      setState(() {
-        isDoing = false;
-      });
-
-      Alert.show("Unable to Add", e.toString(), context);
-    }
-  }
-
-  doUpdate(Map product) async {
-    setState(() {
-      isDoing = true;
-    });
-
-    try {
-      Map? data = await widget.apiCall
-          .patch('/products/${product['id']}')
-          .data("", product)
-          .call();
-
-      setState(() {
-        isDoing = false;
-      });
-
-      widget.onAdded(data!['product']);
-      widget.onClose();
-    } catch (e) {
-      setState(() {
-        isDoing = false;
-      });
-
-      Alert.show("Unable to Add", e.toString(), context);
-    }
   }
 
   @override
@@ -668,7 +686,6 @@ class _DialogAddState extends State<DialogAdd> {
 class ProductsDataSource extends DataGridSource {
   final BuildContext context;
   List<dynamic> _items = [];
-  //List<DataGridRow> _data = [];
 
   @override
   List<DataGridRow> get rows => _items
@@ -707,7 +724,19 @@ class ProductsDataSource extends DataGridSource {
     notifyListeners();
   }
 
-  update(Map item) {}
+  update(Map item) {
+    int index = findIndex(item['id']);
+    if (index == -1) return;
+    _items[index] = item;
+    notifyListeners();
+  }
+
+  delete(id) {
+    int index = findIndex(id);
+    if (index == -1) return;
+    _items.removeAt(index);
+    notifyListeners();
+  }
 
   Map? getItem(id) {
     int index = findIndex(id);
