@@ -18,6 +18,8 @@ class Products extends StatefulWidget {
 class _ProductsState extends State<Products> {
   bool isFetching = false;
 
+  bool isDisposed = false;
+
   final List columnNames = [
     'id',
     'itemcode',
@@ -52,34 +54,92 @@ class _ProductsState extends State<Products> {
   bool isRightSideMenuOpened = false;
   Map? productToUpdate;
 
+  safeCall(func) {
+    if (isDisposed) return;
+    func();
+  }
+
   fetch(BuildContext context) async {
-    setState(() {
-      isFetching = true;
-    });
+    safeCall(() => setState(() => isFetching = true));
 
     try {
       Map? data = await widget.apiCall.get("/products").call();
 
-      gridSource = GridSource(
-        columnNames: columnNames,
-        context: context,
-        items: data!['products'],
-      );
+      safeCall(() {
+        gridSource = GridSource(
+          columnNames: columnNames,
+          context: context,
+          items: data!['products'],
+        );
 
-      setState(() => isFetching = false);
+        setState(() => isFetching = false);
+      });
     } catch (e) {
-      gridSource = GridSource(
-        columnNames: columnNames,
-        context: context,
-        items: [],
-      );
+      safeCall(() {
+        gridSource = GridSource(
+          columnNames: columnNames,
+          context: context,
+          items: [],
+        );
 
-      setState(() => isFetching = false);
+        setState(() => isFetching = false);
 
-      Alert.show("Fetching Failed", e.toString(), context);
+        Alert.show("Fetching Failed", e.toString(), context);
+      });
     }
 
-    addFilters(searchValue);
+    safeCall(() => addFilters(searchValue));
+  }
+
+  doAdd(Map product, menu) async {
+    try {
+      Map? data =
+          await widget.apiCall.post('/products').data("", product).call();
+      safeCall(() {
+        menu.onAddResult(data!['product']);
+        gridSource.add(data['product']);
+      });
+    } catch (e) {
+      safeCall(() {
+        menu.onAddResult(null);
+        Alert.show("Unable to Add", e.toString(), context);
+      });
+    }
+  }
+
+  doUpdate(Map product, menu) async {
+    try {
+      Map? data = await widget.apiCall
+          .patch('/products/${product['id']}')
+          .data("", product)
+          .call();
+      safeCall(() {
+        menu.onUpdateResult(data!['product']);
+        gridSource.update(data['product']);
+      });
+    } catch (e) {
+      safeCall(() {
+        menu.onUpdateResult(null);
+        Alert.show("Unable to Update", e.toString(), context);
+      });
+    }
+  }
+
+  doDelete(id, dialog) async {
+    dialog.showProgressIndicator(true);
+
+    try {
+      Map? data = await widget.apiCall.delete('/products/$id').call();
+      safeCall(() {
+        dialog.close();
+        gridSource.delete(id);
+      });
+    } catch (e) {
+      safeCall(() {
+        dialog.close();
+        Alert.show("Unable to Delete!", e.toString(), context);
+      });
+    }
   }
 
   addFilters(String value) {
@@ -105,49 +165,16 @@ class _ProductsState extends State<Products> {
     }
   }
 
-  doAdd(Map product, menu) async {
-    try {
-      Map? data =
-          await widget.apiCall.post('/products').data("", product).call();
-      menu.onAddResult(data!['product']);
-      gridSource.add(data['product']);
-    } catch (e) {
-      menu.onAddResult(null);
-      Alert.show("Unable to Add", e.toString(), context);
-    }
-  }
-
-  doUpdate(Map product, menu) async {
-    try {
-      Map? data = await widget.apiCall
-          .patch('/products/${product['id']}')
-          .data("", product)
-          .call();
-      menu.onUpdateResult(data!['product']);
-      gridSource.update(data['product']);
-    } catch (e) {
-      menu.onUpdateResult(null);
-      Alert.show("Unable to Update", e.toString(), context);
-    }
-  }
-
-  doDelete(id, dialog) async {
-    dialog.showProgressIndicator(true);
-
-    try {
-      Map? data = await widget.apiCall.delete('/products/$id').call();
-      dialog.close();
-      gridSource.delete(id);
-    } catch (e) {
-      dialog.close();
-      Alert.show("Unable to Delete!", e.toString(), context);
-    }
-  }
-
   @override
   void initState() {
     super.initState();
     fetch(context);
+  }
+
+  @override
+  void dispose() {
+    isDisposed = true;
+    super.dispose();
   }
 
   @override

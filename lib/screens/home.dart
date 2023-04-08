@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:wuusu_shop_client/apicall.dart';
 import 'package:wuusu_shop_client/main.dart';
 import 'package:wuusu_shop_client/screens/inventory/inventory.dart';
+import 'package:wuusu_shop_client/screens/stock/stock.dart';
 
 class HomeScreen extends StatefulWidget {
   final ApiCall apiCall;
@@ -108,7 +109,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               ? InventoryScreen(
                                   apiCall: widget.apiCall,
                                 )
-                              : Container(),
+                              : selectedSideMenuItem == 1
+                                  ? StockScreen(apiCall: widget.apiCall)
+                                  : Container(),
                         ),
                       ],
                     ),
