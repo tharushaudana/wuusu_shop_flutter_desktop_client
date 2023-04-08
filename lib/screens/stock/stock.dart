@@ -27,7 +27,9 @@ class _StockScreenState extends State<StockScreen> {
       TabData(
         closable: false,
         text: 'Stock Adds',
-        content: Text("stock adds"),
+        content: StockAdds(
+          apiCall: widget.apiCall,
+        ),
         keepAlive: true,
       ),
     );

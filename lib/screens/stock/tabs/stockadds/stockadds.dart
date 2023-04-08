@@ -2,32 +2,34 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:wuusu_shop_client/alert.dart';
 import 'package:wuusu_shop_client/apicall.dart';
-import 'package:wuusu_shop_client/screens/inventory/tabs/materials/datagrid.dart';
-import 'package:wuusu_shop_client/screens/inventory/tabs/materials/gridsource.dart';
-import 'package:wuusu_shop_client/screens/inventory/tabs/materials/rightmenu.dart';
+import 'package:wuusu_shop_client/screens/stock/tabs/stockadds/datagrid.dart';
+import 'package:wuusu_shop_client/screens/stock/tabs/stockadds/gridsource.dart';
+import 'package:wuusu_shop_client/screens/stock/tabs/stockadds/rightmenu.dart';
 
-class Materials extends StatefulWidget {
+class StockAdds extends StatefulWidget {
   final ApiCall apiCall;
 
-  Materials({required this.apiCall});
+  StockAdds({required this.apiCall});
 
   @override
-  State<StatefulWidget> createState() => _MaterialsState();
+  State<StatefulWidget> createState() => _StockAddsState();
 }
 
-class _MaterialsState extends State<Materials> {
+class _StockAddsState extends State<StockAdds> {
   bool isFetching = false;
 
   bool isDisposed = false;
 
   final List columnNames = [
     'id',
-    'description',
-    'unit',
+    'product',
+    'supplier',
+    'qty',
+    'created_at',
   ];
 
   final List inputData = [
-    ["description", "Description", "string"],
+    ["product_id", "Product ID", "string"],
     ["unit", "Unit", "string"],
   ];
 
@@ -47,13 +49,13 @@ class _MaterialsState extends State<Materials> {
     safeCall(() => setState(() => isFetching = true));
 
     try {
-      Map? data = await widget.apiCall.get("/materials").call();
+      Map? data = await widget.apiCall.get("/stock/records").call();
 
       safeCall(() {
         gridSource = GridSource(
           columnNames: columnNames,
           context: context,
-          items: data!['materials'],
+          items: data!['items'],
         );
 
         setState(() => isFetching = false);
@@ -131,7 +133,15 @@ class _MaterialsState extends State<Materials> {
 
     if (value.trim().isNotEmpty) {
       gridSource.addFilter(
-        'description',
+        'product',
+        FilterCondition(
+          type: FilterType.contains,
+          filterBehavior: FilterBehavior.stringDataType,
+          value: value.toString(),
+        ),
+      );
+      gridSource.addFilter(
+        'supplier',
         FilterCondition(
           type: FilterType.contains,
           filterBehavior: FilterBehavior.stringDataType,
@@ -200,25 +210,19 @@ class _MaterialsState extends State<Materials> {
                           : DataGrid(
                               columnNames: columnNames,
                               source: gridSource,
-                              onClickUpdate: (id) {
-                                setState(() {
-                                  materialToUpdate = gridSource.getItem(id);
-                                  isRightSideMenuOpened = true;
-                                });
-                              },
-                              onClickDelete: (id) {
-                                Alert.showConfirm(
-                                  'Delete Product #$id',
-                                  "Are you sure?",
-                                  context,
-                                  (dialog) {
-                                    doDelete(id, dialog);
-                                  },
-                                );
-                              },
                             ),
                     ),
                   ),
+                  !isFetching
+                      ? Container(
+                          height: 60,
+                          child: SfDataPager(
+                            delegate: gridSource,
+                            pageCount: 5,
+                            direction: Axis.horizontal,
+                          ),
+                        )
+                      : Container()
                 ],
               ),
             ),

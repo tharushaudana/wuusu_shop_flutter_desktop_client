@@ -4,14 +4,10 @@ import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 class DataGrid extends StatefulWidget {
   final List columnNames;
   final DataGridSource source;
-  final onClickUpdate;
-  final onClickDelete;
 
   DataGrid({
     required this.columnNames,
     required this.source,
-    required this.onClickUpdate,
-    required this.onClickDelete,
   });
 
   @override
@@ -44,44 +40,50 @@ class _DataGridState extends State<DataGrid> {
   Widget build(Object context) {
     return SfDataGrid(
       source: widget.source,
-      columnWidthMode: ColumnWidthMode.fill,
-      frozenColumnsCount: 1,
+      columnWidthMode: ColumnWidthMode.lastColumnFill,
+      //frozenColumnsCount: 1,
       allowSorting: true,
       allowMultiColumnSorting: true,
       allowColumnsResizing: true,
-      allowSwiping: true,
-      swipeMaxOffset: 100.0,
-      startSwipeActionsBuilder: (
-        BuildContext context,
-        DataGridRow row,
-        int rowIndex,
-      ) {
-        return Row(
-          children: [
-            const Spacer(),
-            IconButton(
-              onPressed: () {
-                widget.onClickUpdate(row.getCells()[0].value);
-              },
-              color: Colors.blue,
-              icon: const Icon(Icons.edit),
-            ),
-            IconButton(
-              onPressed: () {
-                widget.onClickDelete(row.getCells()[0].value);
-              },
-              color: Colors.red,
-              icon: const Icon(Icons.delete),
-            ),
-          ],
-        );
-      },
       onColumnResizeUpdate: (ColumnResizeUpdateDetails details) {
         setState(() {
           columnWidths[details.column.columnName] = details.width;
         });
         return true;
       },
+      /*loadMoreViewBuilder: (BuildContext context, LoadMoreRows loadMoreRows) {
+        Future<String> loadRows() async {
+          await loadMoreRows();
+          return Future<String>.value('Completed');
+        }
+
+        return FutureBuilder<String>(
+            initialData: 'loading',
+            future: loadRows(),
+            builder: (context, snapShot) {
+              if (snapShot.data == 'loading') {
+                return Container(
+                  height: 60.0,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: BorderDirectional(
+                      top: BorderSide(
+                        width: 1.0,
+                        color: Color.fromRGBO(0, 0, 0, 0.26),
+                      ),
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation(Colors.deepPurple),
+                  ),
+                );
+              } else {
+                return SizedBox.fromSize(size: Size.zero);
+              }
+            });
+      },*/
       columns: <GridColumn>[
         for (String columnName in widget.columnNames)
           GridColumn(
