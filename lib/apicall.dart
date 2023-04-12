@@ -66,6 +66,11 @@ class ApiRequest {
     return this;
   }
 
+  ApiRequest object(Map map) {
+    map.forEach((mkey, mvalue) => _data[mkey] = mvalue.toString());
+    return this;
+  }
+
   Future<Map?> call() async {
     Map? data = await _call();
     return data;

@@ -66,6 +66,10 @@ class GridSource extends DataGridSource {
     return _items.indexWhere((element) => element['id'] == id);
   }
 
+  int itemCount() {
+    return _items.length;
+  }
+
   @override
   DataGridRowAdapter buildRow(DataGridRow row) {
     return DataGridRowAdapter(

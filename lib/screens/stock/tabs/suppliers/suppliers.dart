@@ -2,49 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:wuusu_shop_client/alert.dart';
 import 'package:wuusu_shop_client/apicall.dart';
-import 'package:wuusu_shop_client/screens/inventory/tabs/products/datagrid.dart';
-import 'package:wuusu_shop_client/screens/inventory/tabs/products/gridsource.dart';
-import 'package:wuusu_shop_client/screens/inventory/tabs/products/rightmenu.dart';
+import 'package:wuusu_shop_client/screens/stock/tabs/suppliers/datagrid.dart';
+import 'package:wuusu_shop_client/screens/stock/tabs/suppliers/gridsource.dart';
+import 'package:wuusu_shop_client/screens/stock/tabs/suppliers/rightmenu.dart';
 
-class Products extends StatefulWidget {
+class Suppliers extends StatefulWidget {
   final ApiCall apiCall;
 
-  Products({required this.apiCall});
+  Suppliers({required this.apiCall});
 
   @override
-  State<StatefulWidget> createState() => _ProductsState();
+  State<StatefulWidget> createState() => _SuppliersState();
 }
 
-class _ProductsState extends State<Products> {
+class _SuppliersState extends State<Suppliers> {
   bool isFetching = false;
 
   bool isDisposed = false;
 
   final List columnNames = [
     'id',
-    'itemcode',
-    'description',
-    'unit',
-    'qty',
-    'minqty',
-    'price_sale',
-    'max_retail_price',
-    'received_rate',
-    'profit_percent',
-    'price_matara',
-    'price_akuressa'
+    'name',
   ];
 
   final List inputData = [
-    ["itemcode", "Item Code", "string"],
-    ["description", "Description", "string"],
-    ["unit", "Unit", "string"],
-    ["minqty", "Minimum Qty", "number"],
-    ["max_retail_price", "Maximum Retail Price", "number"],
-    ["saler_discount_rate", "Saler Discount Rate", "number"],
-    ["profit_percent", "Profit Percentage", "number"],
-    ["price_matara", "Price Matara", "number"],
-    ["price_akuressa", "Price Akuressa", "number"],
+    ["name", "Name", "string"],
   ];
 
   late GridSource gridSource;
@@ -52,7 +34,7 @@ class _ProductsState extends State<Products> {
   String searchValue = "";
 
   bool isRightSideMenuOpened = false;
-  Map? productToUpdate;
+  Map? supplierToUpdate;
 
   safeCall(func) {
     if (isDisposed) return;
@@ -63,13 +45,13 @@ class _ProductsState extends State<Products> {
     safeCall(() => setState(() => isFetching = true));
 
     try {
-      Map? data = await widget.apiCall.get("/products").call();
+      Map? data = await widget.apiCall.get("/suppliers").call();
 
       safeCall(() {
         gridSource = GridSource(
           columnNames: columnNames,
           context: context,
-          items: data!['products'],
+          items: data!['suppliers'],
         );
 
         setState(() => isFetching = false);
@@ -91,13 +73,14 @@ class _ProductsState extends State<Products> {
     safeCall(() => addFilters(searchValue));
   }
 
-  doAdd(Map product, menu) async {
+  doAdd(Map supplier, menu) async {
     try {
-      Map? data = await widget.apiCall.post('/products').object(product).call();
+      Map? data =
+          await widget.apiCall.post('/suppliers').object(supplier).call();
 
       safeCall(() {
-        menu.onAddResult(data!['product']);
-        gridSource.add(data['product']);
+        menu.onAddResult(data!['supplier']);
+        gridSource.add(data['supplier']);
       });
     } catch (e) {
       safeCall(() {
@@ -107,15 +90,15 @@ class _ProductsState extends State<Products> {
     }
   }
 
-  doUpdate(Map product, menu) async {
+  doUpdate(Map supplier, menu) async {
     try {
       Map? data = await widget.apiCall
-          .patch('/products/${product['id']}')
-          .object(product)
+          .patch('/suppliers/${supplier['id']}')
+          .object(supplier)
           .call();
       safeCall(() {
-        menu.onUpdateResult(data!['product']);
-        gridSource.update(data['product']);
+        menu.onUpdateResult(data!['supplier']);
+        gridSource.update(data['supplier']);
       });
     } catch (e) {
       safeCall(() {
@@ -126,10 +109,10 @@ class _ProductsState extends State<Products> {
   }
 
   doDelete(id, dialog) async {
-    dialog.showProgressIndicator(true);
+    /*dialog.showProgressIndicator(true);
 
     try {
-      Map? data = await widget.apiCall.delete('/products/$id').call();
+      Map? data = await widget.apiCall.delete('/suppliers/$id').call();
       safeCall(() {
         dialog.close();
         gridSource.delete(id);
@@ -139,23 +122,15 @@ class _ProductsState extends State<Products> {
         dialog.close();
         Alert.show("Unable to Delete!", e.toString(), context);
       });
-    }
+    }*/
   }
 
   addFilters(String value) {
     gridSource.clearFilters();
 
-    if (value.trim().length > 0) {
+    if (value.trim().isNotEmpty) {
       gridSource.addFilter(
-        'itemcode',
-        FilterCondition(
-          type: FilterType.contains,
-          filterBehavior: FilterBehavior.stringDataType,
-          value: value.toString(),
-        ),
-      );
-      gridSource.addFilter(
-        'description',
+        'name',
         FilterCondition(
           type: FilterType.contains,
           filterBehavior: FilterBehavior.stringDataType,
@@ -186,7 +161,7 @@ class _ProductsState extends State<Products> {
         children: [
           Expanded(
             child: Container(
-              padding: EdgeInsets.all(10),
+              padding: const EdgeInsets.all(10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -227,13 +202,13 @@ class _ProductsState extends State<Products> {
                               source: gridSource,
                               onClickUpdate: (id) {
                                 setState(() {
-                                  productToUpdate = gridSource.getItem(id);
+                                  supplierToUpdate = gridSource.getItem(id);
                                   isRightSideMenuOpened = true;
                                 });
                               },
                               onClickDelete: (id) {
                                 Alert.showConfirm(
-                                  'Delete Product #$id',
+                                  'Delete Supplier #$id',
                                   "Are you sure?",
                                   context,
                                   (dialog) {
@@ -283,7 +258,7 @@ class _ProductsState extends State<Products> {
                       IconButton(
                         onPressed: () {
                           setState(() {
-                            productToUpdate = null;
+                            supplierToUpdate = null;
                             isRightSideMenuOpened = true;
                           });
                         },
@@ -304,7 +279,7 @@ class _ProductsState extends State<Products> {
                         isRightSideMenuOpened = false;
                       });
                     },
-                    product: productToUpdate,
+                    supplier: supplierToUpdate,
                   ),
           ),
         ],

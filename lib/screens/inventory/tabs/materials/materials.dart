@@ -78,7 +78,8 @@ class _MaterialsState extends State<Materials> {
   doAdd(Map material, menu) async {
     try {
       Map? data =
-          await widget.apiCall.post('/materials').data("", material).call();
+          await widget.apiCall.post('/materials').object(material).call();
+
       safeCall(() {
         menu.onAddResult(data!['material']);
         gridSource.add(data['material']);
@@ -95,7 +96,7 @@ class _MaterialsState extends State<Materials> {
     try {
       Map? data = await widget.apiCall
           .patch('/materials/${material['id']}')
-          .data("", material)
+          .object(material)
           .call();
       safeCall(() {
         menu.onUpdateResult(data!['material']);
@@ -164,6 +165,7 @@ class _MaterialsState extends State<Materials> {
             child: Container(
               padding: const EdgeInsets.all(10),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   TextFormField(
                     onChanged: (value) {
@@ -219,6 +221,12 @@ class _MaterialsState extends State<Materials> {
                             ),
                     ),
                   ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  !isFetching
+                      ? Text('Showing ${gridSource.itemCount()} Items')
+                      : Container()
                 ],
               ),
             ),

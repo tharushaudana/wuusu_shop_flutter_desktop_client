@@ -5,6 +5,7 @@ import 'package:wuusu_shop_client/alert.dart';
 class GridSource extends DataGridSource {
   final List columnNames;
   final BuildContext context;
+  final onLoadMore;
   List<dynamic> _items = [];
 
   @override
@@ -27,6 +28,7 @@ class GridSource extends DataGridSource {
   GridSource({
     required this.columnNames,
     required this.context,
+    required this.onLoadMore,
     required List<dynamic> items,
   }) {
     _items.clear();
@@ -63,16 +65,14 @@ class GridSource extends DataGridSource {
     return _items.indexWhere((element) => element['id'] == id);
   }
 
+  int itemCount() {
+    return _items.length;
+  }
+
   @override
   Future<void> handleLoadMoreRows() async {
-    await Future.delayed(Duration(seconds: 5));
-    _items.add({
-      'id': '10',
-      'product': {'itemcode': 'ITC01', 'description': 'TP'},
-      'supplier': {'name': 'Tha'},
-      'qty': 10,
-      'created_at': 'sdfdfg'
-    });
+    List moreItems = await onLoadMore();
+    _items.addAll(moreItems);
     notifyListeners();
   }
 

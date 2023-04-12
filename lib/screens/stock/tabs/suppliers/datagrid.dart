@@ -44,8 +44,8 @@ class _DataGridState extends State<DataGrid> {
   Widget build(Object context) {
     return SfDataGrid(
       source: widget.source,
-      columnWidthMode: ColumnWidthMode.lastColumnFill,
-      frozenColumnsCount: 2,
+      columnWidthMode: ColumnWidthMode.fill,
+      frozenColumnsCount: 1,
       allowSorting: true,
       allowMultiColumnSorting: true,
       allowColumnsResizing: true,
@@ -95,46 +95,6 @@ class _DataGridState extends State<DataGrid> {
               ),
             ),
           )
-      ],
-      stackedHeaderRows: <StackedHeaderRow>[
-        StackedHeaderRow(
-          cells: [
-            StackedHeaderCell(
-              columnNames: ['id', 'itemcode', 'description', 'unit'],
-              child: Container(
-                color: Colors.amber.withOpacity(0.8),
-                child: const Center(
-                  child: Text('Product Details'),
-                ),
-              ),
-            ),
-            StackedHeaderCell(
-              columnNames: ['qty', 'minqty'],
-              child: Container(
-                color: Colors.amber.withOpacity(0.5),
-                child: const Center(
-                  child: Text('Stock Details'),
-                ),
-              ),
-            ),
-            StackedHeaderCell(
-              columnNames: [
-                'price_sale',
-                'max_retail_price',
-                'received_rate',
-                'profit_percent',
-                'price_matara',
-                'price_akuressa'
-              ],
-              child: Container(
-                color: Colors.amber.withOpacity(0.2),
-                child: const Center(
-                  child: Text('Price Details'),
-                ),
-              ),
-            ),
-          ],
-        ),
       ],
     );
   }

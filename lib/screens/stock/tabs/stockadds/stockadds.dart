@@ -34,23 +34,56 @@ class _StockAddsState extends State<StockAdds> {
 
   bool isRightSideMenuOpened = false;
 
+  int currentPage = 1;
+  int? totalPages;
+  int? totalItems;
+
   safeCall(func) {
     if (isDisposed) return;
     func();
+  }
+
+  loadPage(int page) async {
+    if (page <= 0 || (totalPages != null && page > totalPages!)) return [];
+
+    try {
+      Map? data =
+          await widget.apiCall.get("/stock/records").param("page", page).call();
+
+      List records = data!['items'];
+
+      currentPage = page;
+      totalPages = data['total_pages'];
+      totalItems = data['total_items'];
+
+      safeCall(() {
+        setState(() {}); // for update current item count in screen
+      });
+
+      return records;
+    } catch (e) {
+      safeCall(() {
+        Alert.show("Fetching Failed", e.toString(), context);
+      });
+
+      throw Exception();
+    }
   }
 
   fetch(BuildContext context) async {
     safeCall(() => setState(() => isFetching = true));
 
     try {
-      Map? data =
-          await widget.apiCall.get("/stock/records").param("page", 1).call();
+      List records = await loadPage(1);
 
       safeCall(() {
         gridSource = GridSource(
+          onLoadMore: () async {
+            return await loadPage(currentPage + 1);
+          },
           columnNames: columnNames,
           context: context,
-          items: data!['items'],
+          items: records,
         );
 
         setState(() => isFetching = false);
@@ -58,14 +91,15 @@ class _StockAddsState extends State<StockAdds> {
     } catch (e) {
       safeCall(() {
         gridSource = GridSource(
+          onLoadMore: () async {
+            return await loadPage(currentPage + 1);
+          },
           columnNames: columnNames,
           context: context,
           items: [],
         );
 
         setState(() => isFetching = false);
-
-        Alert.show("Fetching Failed", e.toString(), context);
       });
     }
 
@@ -75,7 +109,7 @@ class _StockAddsState extends State<StockAdds> {
   doAdd(Map record, menu) async {
     try {
       Map? data =
-          await widget.apiCall.post('/stock/records').data("", record).call();
+          await widget.apiCall.post('/stock/records').object(record).call();
       safeCall(() {
         menu.onAddResult(data!['record']);
         gridSource.add(data['record']);
@@ -134,6 +168,7 @@ class _StockAddsState extends State<StockAdds> {
             child: Container(
               padding: const EdgeInsets.all(10),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   TextFormField(
                     onChanged: (value) {
@@ -173,6 +208,13 @@ class _StockAddsState extends State<StockAdds> {
                             ),
                     ),
                   ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  totalItems != null
+                      ? Text(
+                          'Showing ${gridSource.itemCount()} of $totalItems Items')
+                      : Container()
                 ],
               ),
             ),

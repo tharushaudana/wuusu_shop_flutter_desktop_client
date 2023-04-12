@@ -4,6 +4,7 @@ import 'package:tabbed_view/tabbed_view.dart';
 import 'package:wuusu_shop_client/apicall.dart';
 import 'package:wuusu_shop_client/main.dart';
 import 'package:wuusu_shop_client/screens/stock/tabs/stockadds/stockadds.dart';
+import 'package:wuusu_shop_client/screens/stock/tabs/suppliers/suppliers.dart';
 
 class StockScreen extends StatefulWidget {
   final ApiCall apiCall;
@@ -47,7 +48,9 @@ class _StockScreenState extends State<StockScreen> {
       TabData(
         closable: false,
         text: 'Suppliers',
-        content: Text("suppliers"),
+        content: Suppliers(
+          apiCall: widget.apiCall,
+        ),
         keepAlive: true,
       ),
     );
