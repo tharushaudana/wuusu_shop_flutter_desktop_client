@@ -28,17 +28,11 @@ class _StockAddsState extends State<StockAdds> {
     'created_at',
   ];
 
-  final List inputData = [
-    ["product_id", "Product ID", "string"],
-    ["unit", "Unit", "string"],
-  ];
-
   late GridSource gridSource;
 
   String searchValue = "";
 
   bool isRightSideMenuOpened = false;
-  Map? materialToUpdate;
 
   safeCall(func) {
     if (isDisposed) return;
@@ -49,7 +43,8 @@ class _StockAddsState extends State<StockAdds> {
     safeCall(() => setState(() => isFetching = true));
 
     try {
-      Map? data = await widget.apiCall.get("/stock/records").call();
+      Map? data =
+          await widget.apiCall.get("/stock/records").param("page", 1).call();
 
       safeCall(() {
         gridSource = GridSource(
@@ -77,53 +72,18 @@ class _StockAddsState extends State<StockAdds> {
     safeCall(() => addFilters(searchValue));
   }
 
-  doAdd(Map material, menu) async {
+  doAdd(Map record, menu) async {
     try {
       Map? data =
-          await widget.apiCall.post('/materials').data("", material).call();
+          await widget.apiCall.post('/stock/records').data("", record).call();
       safeCall(() {
-        menu.onAddResult(data!['material']);
-        gridSource.add(data['material']);
+        menu.onAddResult(data!['record']);
+        gridSource.add(data['record']);
       });
     } catch (e) {
       safeCall(() {
         menu.onAddResult(null);
         Alert.show("Unable to Add", e.toString(), context);
-      });
-    }
-  }
-
-  doUpdate(Map material, menu) async {
-    try {
-      Map? data = await widget.apiCall
-          .patch('/materials/${material['id']}')
-          .data("", material)
-          .call();
-      safeCall(() {
-        menu.onUpdateResult(data!['material']);
-        gridSource.update(data['material']);
-      });
-    } catch (e) {
-      safeCall(() {
-        menu.onUpdateResult(null);
-        Alert.show("Unable to Update", e.toString(), context);
-      });
-    }
-  }
-
-  doDelete(id, dialog) async {
-    dialog.showProgressIndicator(true);
-
-    try {
-      Map? data = await widget.apiCall.delete('/materials/$id').call();
-      safeCall(() {
-        dialog.close();
-        gridSource.delete(id);
-      });
-    } catch (e) {
-      safeCall(() {
-        dialog.close();
-        Alert.show("Unable to Delete!", e.toString(), context);
       });
     }
   }
@@ -213,16 +173,6 @@ class _StockAddsState extends State<StockAdds> {
                             ),
                     ),
                   ),
-                  !isFetching
-                      ? Container(
-                          height: 60,
-                          child: SfDataPager(
-                            delegate: gridSource,
-                            pageCount: 5,
-                            direction: Axis.horizontal,
-                          ),
-                        )
-                      : Container()
                 ],
               ),
             ),
@@ -256,7 +206,6 @@ class _StockAddsState extends State<StockAdds> {
                       IconButton(
                         onPressed: () {
                           setState(() {
-                            materialToUpdate = null;
                             isRightSideMenuOpened = true;
                           });
                         },
@@ -266,19 +215,14 @@ class _StockAddsState extends State<StockAdds> {
                   )
                 : RightMenu(
                     apiCall: widget.apiCall,
-                    inputData: inputData,
-                    onClickAdd: (product, menu) {
-                      doAdd(product, menu);
-                    },
-                    onClickUpdate: (product, menu) {
-                      doUpdate(product, menu);
+                    onClickAdd: (record, menu) {
+                      doAdd(record, menu);
                     },
                     onClose: () {
                       setState(() {
                         isRightSideMenuOpened = false;
                       });
                     },
-                    material: materialToUpdate,
                   ),
           ),
         ],

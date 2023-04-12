@@ -193,7 +193,7 @@ class _RightMenuState extends State<RightMenu> {
                         }
                       : null,
                   child: const Text(
-                    "Cancel",
+                    "Close",
                     style: TextStyle(color: Colors.deepOrange),
                     overflow: TextOverflow.ellipsis,
                   ),

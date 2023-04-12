@@ -1,34 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:wuusu_shop_client/apicall.dart';
-import 'package:wuusu_shop_client/dropdowns/dropdownselecter_products.dart';
+import 'package:wuusu_shop_client/dropdowns/controller.dart';
+import 'package:wuusu_shop_client/dropdowns/dropdownselector_products.dart';
+import 'package:wuusu_shop_client/dropdowns/dropdownselector_suppliers.dart';
 
 class RightMenu extends StatefulWidget {
   final ApiCall apiCall;
-  final List inputData;
-  final Map? material;
   final onClickAdd;
-  final onClickUpdate;
   final onClose;
 
   List inputValues = [];
 
   RightMenu({
     required this.apiCall,
-    required this.inputData,
-    required this.material,
     required this.onClickAdd,
-    required this.onClickUpdate,
     required this.onClose,
-  }) {
-    inputValues.clear();
-    for (List e in inputData) {
-      inputValues.add(getAttrOfCurrentMaterial(e[0]));
-    }
-  }
-
-  String getAttrOfCurrentMaterial(String name) {
-    return material == null ? "" : material![name];
-  }
+  });
 
   @override
   State<StatefulWidget> createState() => _RightMenuState();
@@ -37,16 +24,23 @@ class RightMenu extends StatefulWidget {
 class _RightMenuState extends State<RightMenu> {
   final _formKey = GlobalKey<FormState>();
 
-  bool isValidated = false;
   bool isDoing = false;
+
+  DropDownSelectorController dropDownSelectorControllerProducts =
+      DropDownSelectorController();
+  DropDownSelectorController dropDownSelectorControllerSuppliers =
+      DropDownSelectorController();
+
+  int? product_id;
+  int? supplier_id;
+  String qtyInput = "";
 
   onAddResult(Map? object) {
     if (object != null) {
+      dropDownSelectorControllerProducts.reset();
+      dropDownSelectorControllerSuppliers.reset();
       setState(() {
-        for (int i = 0; i < widget.inputValues.length; i++) {
-          widget.inputValues[i] = "";
-        }
-        isValidated = false;
+        qtyInput = "";
       });
     }
 
@@ -55,12 +49,9 @@ class _RightMenuState extends State<RightMenu> {
     });
   }
 
-  onUpdateResult(Map? object) {
-    setState(() {
-      isDoing = false;
-    });
-
-    if (object != null) widget.onClose();
+  @override
+  void initState() {
+    super.initState();
   }
 
   @override
@@ -81,31 +72,92 @@ class _RightMenuState extends State<RightMenu> {
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(
-            height: 10,
+            height: 20,
           ),
           Expanded(
-            child: isDoing
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: DropDownSelectorProducts(
-                              apiCall: widget.apiCall,
-                              multiSelectMode: false,
-                              onSelected: (e) {
-                                print(e);
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text("Product:"),
+                const SizedBox(height: 6),
+                Container(
+                  width: double.infinity,
+                  child: DropDownSelectorProducts(
+                    apiCall: widget.apiCall,
+                    controller: dropDownSelectorControllerProducts,
+                    multiSelectMode: false,
+                    onSelected: (product) {
+                      setState(() {
+                        product_id = product == null ? null : product['id'];
+                      });
+                    },
                   ),
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                const Text("Supplier:"),
+                const SizedBox(height: 6),
+                Container(
+                  width: double.infinity,
+                  child: DropDownSelectorSuppliers(
+                    apiCall: widget.apiCall,
+                    controller: dropDownSelectorControllerSuppliers,
+                    multiSelectMode: false,
+                    onSelected: (supplier) {
+                      setState(() {
+                        supplier_id = supplier == null ? null : supplier['id'];
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                TextFormField(
+                  onChanged: (value) => setState(() {
+                    qtyInput = value;
+                  }),
+                  controller: TextEditingController.fromValue(
+                    TextEditingValue(
+                      text: qtyInput,
+                      selection: TextSelection.fromPosition(
+                        TextPosition(
+                          offset: qtyInput.length,
+                        ),
+                      ),
+                    ),
+                  ),
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.grey,
+                      ),
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(3.0),
+                      ),
+                    ),
+                    focusedBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.blue,
+                      ),
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(3.0),
+                      ),
+                    ),
+                    hintText: 'Enter Quantity here',
+                    labelText: 'Quantity',
+                    errorText: qtyInput.length == 0
+                        ? null
+                        : int.tryParse(qtyInput) == null
+                            ? "invalid value!"
+                            : int.tryParse(qtyInput)! <= 0
+                                ? "quantity must be more than 0"
+                                : null,
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(
             height: 10,
@@ -114,29 +166,35 @@ class _RightMenuState extends State<RightMenu> {
             children: [
               Expanded(
                 child: FilledButton(
-                  onPressed: !isDoing && isValidated
+                  onPressed: !isDoing &&
+                          (product_id != null &&
+                              supplier_id != null &&
+                              (int.tryParse(qtyInput) != null &&
+                                  int.tryParse(qtyInput)! > 0))
                       ? () {
-                          Map material = {};
+                          Map record = {
+                            'product_id': product_id,
+                            'supplier_id': supplier_id,
+                            'qty': int.parse(qtyInput)
+                          };
 
-                          for (int i = 0; i < widget.inputValues.length; i++) {
-                            material[widget.inputData[i][0]] =
-                                widget.inputValues[i];
-                          }
+                          setState(() => isDoing = true);
 
-                          if (widget.material == null) {
-                            setState(() => isDoing = true);
-                            widget.onClickAdd(material, this);
-                          } else {
-                            setState(() => isDoing = true);
-                            material['id'] = widget.material!['id'];
-                            widget.onClickUpdate(material, this);
-                          }
+                          widget.onClickAdd(record, this);
                         }
                       : null,
-                  child: Text(
-                    widget.material == null ? "Add" : "Update",
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  child: !isDoing
+                      ? const Text(
+                          "Add",
+                          overflow: TextOverflow.ellipsis,
+                        )
+                      : Container(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 1,
+                          ),
+                        ),
                 ),
               ),
               const SizedBox(
@@ -150,7 +208,7 @@ class _RightMenuState extends State<RightMenu> {
                         }
                       : null,
                   child: const Text(
-                    "Cancel",
+                    "Close",
                     style: TextStyle(color: Colors.deepOrange),
                     overflow: TextOverflow.ellipsis,
                   ),

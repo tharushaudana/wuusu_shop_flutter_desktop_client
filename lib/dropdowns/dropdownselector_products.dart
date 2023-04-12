@@ -1,15 +1,17 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
-import 'package:skeletons/skeletons.dart';
 import 'package:wuusu_shop_client/apicall.dart';
+import 'package:wuusu_shop_client/dropdowns/controller.dart';
 
 class DropDownSelectorProducts extends StatefulWidget {
   final ApiCall apiCall;
-  bool multiSelectMode = false;
+  final DropDownSelectorController controller;
   final onSelected;
+  bool multiSelectMode = false;
 
   DropDownSelectorProducts({
     required this.apiCall,
+    required this.controller,
     required this.multiSelectMode,
     required this.onSelected,
   });
@@ -55,6 +57,15 @@ class _DropDownSelectorProductsState extends State<DropDownSelectorProducts> {
   @override
   void initState() {
     super.initState();
+
+    widget.controller.onReset(() {
+      widget.onSelected(null);
+      setState(() {
+        selectedItemIndex = null;
+        selectedItemsIndexes = [];
+      });
+    });
+
     fetch(context);
   }
 
@@ -143,6 +154,7 @@ class _DropDownSelectorProductsState extends State<DropDownSelectorProducts> {
                                   : Container(),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
                                     items[i]['itemcode'],

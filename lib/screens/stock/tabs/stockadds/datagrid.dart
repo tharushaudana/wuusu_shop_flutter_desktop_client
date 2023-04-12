@@ -1,3 +1,6 @@
+import 'dart:ui';
+
+import 'package:blurrycontainer/blurrycontainer.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
@@ -51,7 +54,7 @@ class _DataGridState extends State<DataGrid> {
         });
         return true;
       },
-      /*loadMoreViewBuilder: (BuildContext context, LoadMoreRows loadMoreRows) {
+      loadMoreViewBuilder: (BuildContext context, LoadMoreRows loadMoreRows) {
         Future<String> loadRows() async {
           await loadMoreRows();
           return Future<String>.value('Completed');
@@ -62,28 +65,22 @@ class _DataGridState extends State<DataGrid> {
             future: loadRows(),
             builder: (context, snapShot) {
               if (snapShot.data == 'loading') {
-                return Container(
-                  height: 60.0,
+                return BlurryContainer(
+                  blur: 5,
                   width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: BorderDirectional(
-                      top: BorderSide(
-                        width: 1.0,
-                        color: Color.fromRGBO(0, 0, 0, 0.26),
-                      ),
-                    ),
-                  ),
-                  alignment: Alignment.center,
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation(Colors.deepPurple),
+                  height: 60,
+                  elevation: 0,
+                  color: Colors.transparent,
+                  child: Container(
+                    alignment: Alignment.center,
+                    child: CircularProgressIndicator(),
                   ),
                 );
               } else {
                 return SizedBox.fromSize(size: Size.zero);
               }
             });
-      },*/
+      },
       columns: <GridColumn>[
         for (String columnName in widget.columnNames)
           GridColumn(

@@ -6,10 +6,9 @@ class GridSource extends DataGridSource {
   final List columnNames;
   final BuildContext context;
   List<dynamic> _items = [];
-  List<dynamic> _paginatedItems = [];
 
   @override
-  List<DataGridRow> get rows => _paginatedItems
+  List<DataGridRow> get rows => _items
       .map<DataGridRow>((e) => DataGridRow(cells: [
             for (String columnName in columnNames)
               DataGridCell(
@@ -32,8 +31,6 @@ class GridSource extends DataGridSource {
   }) {
     _items.clear();
     _items.addAll(items);
-    //_paginatedItems.clear();
-    //_paginatedItems.addAll(items);
   }
 
   add(Map item) {
@@ -66,7 +63,7 @@ class GridSource extends DataGridSource {
     return _items.indexWhere((element) => element['id'] == id);
   }
 
-  /*@override
+  @override
   Future<void> handleLoadMoreRows() async {
     await Future.delayed(Duration(seconds: 5));
     _items.add({
@@ -77,32 +74,6 @@ class GridSource extends DataGridSource {
       'created_at': 'sdfdfg'
     });
     notifyListeners();
-  }*/
-
-  @override
-  Future<bool> handlePageChange(int oldPageIndex, int newPageIndex) async {
-    /*int startIndex = newPageIndex * _rowsPerPage;
-    int endIndex = startIndex + _rowsPerPage;
-    if (startIndex < _orders.length && endIndex <= _orders.length) {
-      _paginatedOrders =
-          _orders.getRange(startIndex, endIndex).toList(growable: false);
-      buildPaginatedDataGridRows();
-      notifyListeners();
-    } else {
-      _paginatedOrders = [];
-    }*/
-
-    if (newPageIndex == 0) {
-      _paginatedItems.addAll(_items);
-      notifyListeners();
-    }
-
-    if (newPageIndex == 1) {
-      _paginatedItems.clear();
-      notifyListeners();
-    }
-
-    return true;
   }
 
   @override
