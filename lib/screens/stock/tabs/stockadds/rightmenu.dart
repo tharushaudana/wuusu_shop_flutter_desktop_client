@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:wuusu_shop_client/apicall.dart';
+import 'package:wuusu_shop_client/dropdowns/dropdownselecter_products.dart';
 
 class RightMenu extends StatefulWidget {
+  final ApiCall apiCall;
   final List inputData;
   final Map? material;
   final onClickAdd;
@@ -10,6 +13,7 @@ class RightMenu extends StatefulWidget {
   List inputValues = [];
 
   RightMenu({
+    required this.apiCall,
     required this.inputData,
     required this.material,
     required this.onClickAdd,
@@ -69,9 +73,7 @@ class _RightMenuState extends State<RightMenu> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            widget.material == null
-                ? "Add New Material"
-                : "Update Material #${widget.material!['id']}",
+            "Add Stock",
             style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.bold,
@@ -86,68 +88,23 @@ class _RightMenuState extends State<RightMenu> {
                 ? const Center(
                     child: CircularProgressIndicator(),
                   )
-                : Form(
-                    key: _formKey,
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    child: ListView.builder(
-                      itemCount: widget.inputValues.length,
-                      itemBuilder: (context, index) {
-                        return Container(
-                          margin: const EdgeInsets.only(top: 10),
-                          child: TextFormField(
-                            onChanged: (value) => setState(() {
-                              setState(() {
-                                widget.inputValues[index] = value;
-                                isValidated = _formKey.currentState!.validate();
-                              });
-                            }),
-                            controller: TextEditingController.fromValue(
-                              TextEditingValue(
-                                text: widget.inputValues[index],
-                                selection: TextSelection.fromPosition(
-                                  TextPosition(
-                                    offset: widget.inputValues[index].length,
-                                  ),
-                                ),
-                              ),
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DropDownSelectorProducts(
+                              apiCall: widget.apiCall,
+                              multiSelectMode: false,
+                              onSelected: (e) {
+                                print(e);
+                              },
                             ),
-                            decoration: InputDecoration(
-                              contentPadding: const EdgeInsets.only(
-                                left: 10,
-                                right: 10,
-                              ),
-                              border: const OutlineInputBorder(
-                                borderSide: BorderSide(color: Colors.grey),
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(3.0),
-                                ),
-                              ),
-                              focusedBorder: const OutlineInputBorder(
-                                borderSide: BorderSide(color: Colors.blue),
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(3.0),
-                                ),
-                              ),
-                              label: Text(
-                                widget.inputData[index][1],
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              hintText: '${widget.inputData[index][1]} here...',
-                            ),
-                            validator: (value) {
-                              if (value.toString().trim().isEmpty) {
-                                return "this field is required!";
-                              }
-                              if (widget.inputData[index][2] == 'number' &&
-                                  double.tryParse(value.toString()) == null) {
-                                return "invalid value!";
-                              }
-                              return null;
-                            },
                           ),
-                        );
-                      },
-                    ),
+                        ],
+                      ),
+                    ],
                   ),
           ),
           const SizedBox(

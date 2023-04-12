@@ -36,6 +36,7 @@ dependencies:
   syncfusion_flutter_datagrid: ^21.1.38
   provider: ^6.0.5
   dropdown_button2: ^2.0.0
+  skeletons: ^0.0.3
 
 
   # The following adds the Cupertino Icons font to your application.

@@ -230,7 +230,7 @@ class _StockAddsState extends State<StockAdds> {
           AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeInOut,
-            width: !isRightSideMenuOpened ? 50 : 300,
+            width: !isRightSideMenuOpened ? 51 : 300,
             padding: const EdgeInsets.all(3),
             decoration: BoxDecoration(
               color: Colors.amber.withAlpha(50),
@@ -265,6 +265,7 @@ class _StockAddsState extends State<StockAdds> {
                     ],
                   )
                 : RightMenu(
+                    apiCall: widget.apiCall,
                     inputData: inputData,
                     onClickAdd: (product, menu) {
                       doAdd(product, menu);
