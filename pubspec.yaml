@@ -34,6 +34,8 @@ dependencies:
   flutter_secure_storage: ^8.0.0
   tabbed_view: ^1.16.0+1
   syncfusion_flutter_datagrid: ^21.1.38
+  syncfusion_flutter_datepicker: ^21.1.39
+  intl: ^0.18.0
   provider: ^6.0.5
   dropdown_button2: ^2.0.0
   blurrycontainer: ^1.0.2

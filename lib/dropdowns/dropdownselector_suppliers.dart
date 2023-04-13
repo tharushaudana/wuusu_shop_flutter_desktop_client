@@ -184,7 +184,7 @@ class _DropDownSelectorSuppliersState extends State<DropDownSelectorSuppliers> {
                 return items.map(
                   (item) {
                     return Container(
-                      alignment: AlignmentDirectional.center,
+                      alignment: AlignmentDirectional.centerStart,
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Text(
                         getSelectedItemLabels().join(', '),

@@ -257,11 +257,16 @@ class _StockAddsState extends State<StockAdds> {
                       icon: const Icon(Icons.refresh),
                     ),
                     IconButton(
-                      onPressed: () {
-                        setState(() {
-                          currentMenuIndex = 2;
-                        });
-                      },
+                      onPressed: !isFetching
+                          ? () {
+                              setState(() {
+                                currentMenuIndex = 2;
+                              });
+                            }
+                          : null,
+                      color: filter.isEmpty()
+                          ? Theme.of(context).iconTheme.color
+                          : Colors.blue,
                       icon: const Icon(Icons.filter_alt_outlined),
                     ),
                     IconButton(
@@ -293,7 +298,9 @@ class _StockAddsState extends State<StockAdds> {
                   filter: filter,
                   onFilterChange: (newfilter) {
                     filter = newfilter;
-                    print(filter.toJsonStr());
+                  },
+                  onClickFilter: () {
+                    fetch(context);
                   },
                   onClose: () {
                     setState(() {

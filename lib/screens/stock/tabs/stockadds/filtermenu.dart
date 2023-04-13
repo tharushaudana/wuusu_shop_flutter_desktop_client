@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 import 'package:wuusu_shop_client/alert.dart';
 import 'package:wuusu_shop_client/apicall.dart';
 import 'package:wuusu_shop_client/apifilter.dart';
@@ -10,12 +12,14 @@ class FilterMenu extends StatefulWidget {
   final ApiCall apiCall;
   final ApiFilter filter;
   final onFilterChange;
+  final onClickFilter;
   final onClose;
 
   FilterMenu({
     required this.apiCall,
     required this.filter,
     required this.onFilterChange,
+    required this.onClickFilter,
     required this.onClose,
   });
 
@@ -29,9 +33,14 @@ class _FilterMenuState extends State<FilterMenu> {
   DropDownSelectorController dropDownSelectorControllerSuppliers =
       DropDownSelectorController();
 
+  DateRangePickerController dateRangePickerController =
+      DateRangePickerController();
+
   int? product_id;
   int? supplier_id;
   String qtyInput = "";
+
+  bool isDateRangeMode = false;
 
   onAddResult(Map? object) {
     if (object != null) {
@@ -43,7 +52,18 @@ class _FilterMenuState extends State<FilterMenu> {
     }
   }
 
-  reset() {}
+  reset() {
+    dropDownSelectorControllerProducts.reset();
+    dropDownSelectorControllerSuppliers.reset();
+    clearDateSelects();
+  }
+
+  clearDateSelects() {
+    setState(() {
+      dateRangePickerController.selectedRange = null;
+      dateRangePickerController.selectedDate = null;
+    });
+  }
 
   @override
   void initState() {
@@ -59,9 +79,9 @@ class _FilterMenuState extends State<FilterMenu> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             "Filter Stocks",
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.bold,
             ),
@@ -70,98 +90,143 @@ class _FilterMenuState extends State<FilterMenu> {
           const SizedBox(
             height: 20,
           ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text("By Products:"),
+              const SizedBox(height: 6),
+              Container(
+                width: double.infinity,
+                child: DropDownSelectorProducts(
+                  apiCall: widget.apiCall,
+                  controller: dropDownSelectorControllerProducts,
+                  multiSelectMode: true,
+                  onSelected: (List? products) {
+                    if (products == null || products.isEmpty) {
+                      widget.filter.remove('in', 'product_id');
+                    } else {
+                      widget.filter.setIn(
+                          'product_id', products.map((e) => e['id']).toList());
+                    }
+
+                    widget.onFilterChange(widget.filter);
+
+                    setState(() {});
+                  },
+                ),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              const Text("By Suppliers:"),
+              const SizedBox(height: 6),
+              Container(
+                width: double.infinity,
+                child: DropDownSelectorSuppliers(
+                  apiCall: widget.apiCall,
+                  controller: dropDownSelectorControllerSuppliers,
+                  multiSelectMode: true,
+                  onSelected: (List? suppliers) {
+                    if (suppliers == null || suppliers.isEmpty) {
+                      widget.filter.remove('in', 'supplier_id');
+                    } else {
+                      widget.filter.setIn('supplier_id',
+                          suppliers.map((e) => e['id']).toList());
+                    }
+
+                    widget.onFilterChange(widget.filter);
+
+                    setState(() {});
+                  },
+                ),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      "Date Range:",
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Spacer(),
+                  Expanded(
+                    child: Container(
+                      alignment: Alignment.topRight,
+                      child: Checkbox(
+                        value: isDateRangeMode,
+                        onChanged: (value) {
+                          setState(() {
+                            isDateRangeMode = value as bool;
+
+                            if (isDateRangeMode) {
+                              dateRangePickerController.selectedDate = null;
+                            } else {
+                              dateRangePickerController.selectedRange = null;
+                            }
+                          });
+                        },
+                      ),
+                    ),
+                  )
+                ],
+              ),
+              TextButton(
+                onPressed: dateRangePickerController.selectedDate != null ||
+                        dateRangePickerController.selectedRange != null
+                    ? () {
+                        clearDateSelects();
+                      }
+                    : null,
+                child: const Text(
+                  "Clear",
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(
+                height: 5,
+              ),
+            ],
+          ),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: ListView(
               children: [
-                const Text("By Products:"),
-                const SizedBox(height: 6),
-                Container(
-                  width: double.infinity,
-                  child: DropDownSelectorProducts(
-                    apiCall: widget.apiCall,
-                    controller: dropDownSelectorControllerProducts,
-                    multiSelectMode: true,
-                    onSelected: (List products) {
-                      if (products.isEmpty) {
-                        widget.filter.remove('in', 'product_id');
-                      } else {
-                        widget.filter.setIn('product_id',
-                            products.map((e) => e['id']).toList());
-                      }
+                SfDateRangePicker(
+                  controller: dateRangePickerController,
+                  onSelectionChanged: (
+                    DateRangePickerSelectionChangedArgs args,
+                  ) {
+                    setState(() {});
 
-                      widget.onFilterChange(widget.filter);
-                    },
-                  ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                const Text("By Suppliers:"),
-                const SizedBox(height: 6),
-                Container(
-                  width: double.infinity,
-                  child: DropDownSelectorSuppliers(
-                    apiCall: widget.apiCall,
-                    controller: dropDownSelectorControllerSuppliers,
-                    multiSelectMode: true,
-                    onSelected: (List suppliers) {
-                      if (suppliers.isEmpty) {
-                        widget.filter.remove('in', 'supplier_id');
-                      } else {
-                        widget.filter.setIn('supplier_id',
-                            suppliers.map((e) => e['id']).toList());
-                      }
+                    if (args.value is PickerDateRange) {
+                      PickerDateRange range = args.value as PickerDateRange;
+                      widget.filter.setDate(
+                          colname: 'created_at',
+                          dstart: DateFormat('yyyy-MM-dd')
+                              .format(range.startDate as DateTime),
+                          dend: range.endDate != null
+                              ? DateFormat('yyyy-MM-dd')
+                                  .format(range.endDate as DateTime)
+                              : null);
+                    } else if (args.value is DateTime) {
+                      widget.filter.setDate(
+                        colname: 'created_at',
+                        dstart: DateFormat('yyyy-MM-dd')
+                            .format(args.value as DateTime),
+                      );
+                    } else if (args.value == null) {
+                      widget.filter.remove('date', 'created_at');
+                    }
 
-                      widget.onFilterChange(widget.filter);
-                    },
-                  ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                TextFormField(
-                  onChanged: (value) => setState(() {
-                    qtyInput = value;
-                  }),
-                  controller: TextEditingController.fromValue(
-                    TextEditingValue(
-                      text: qtyInput,
-                      selection: TextSelection.fromPosition(
-                        TextPosition(
-                          offset: qtyInput.length,
-                        ),
-                      ),
-                    ),
-                  ),
-                  decoration: InputDecoration(
-                    border: const OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Colors.grey,
-                      ),
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(3.0),
-                      ),
-                    ),
-                    focusedBorder: const OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Colors.blue,
-                      ),
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(3.0),
-                      ),
-                    ),
-                    hintText: 'Enter Quantity here',
-                    labelText: 'Quantity',
-                    errorText: qtyInput.length == 0
-                        ? null
-                        : int.tryParse(qtyInput) == null
-                            ? "invalid value!"
-                            : int.tryParse(qtyInput)! <= 0
-                                ? "quantity must be more than 0"
-                                : null,
-                  ),
-                ),
+                    widget.onFilterChange(widget.filter);
+                  },
+                  allowViewNavigation: true,
+                  selectionMode: isDateRangeMode
+                      ? DateRangePickerSelectionMode.range
+                      : DateRangePickerSelectionMode.single,
+                )
               ],
             ),
           ),
@@ -172,7 +237,10 @@ class _FilterMenuState extends State<FilterMenu> {
             children: [
               Expanded(
                 child: FilledButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      widget.onClickFilter();
+                      widget.onClose();
+                    },
                     child: const Text(
                       "Filter",
                       overflow: TextOverflow.ellipsis,
@@ -183,17 +251,19 @@ class _FilterMenuState extends State<FilterMenu> {
               ),
               Expanded(
                 child: TextButton(
-                  onPressed: () {
-                    Alert.showConfirm(
-                      "Reset Filter",
-                      "Are you sure?",
-                      context,
-                      (menu) {
-                        menu.close();
-                        reset();
-                      },
-                    );
-                  },
+                  onPressed: !widget.filter.isEmpty()
+                      ? () {
+                          Alert.showConfirm(
+                            "Reset Filter",
+                            "Are you sure?",
+                            context,
+                            (menu) {
+                              menu.close();
+                              reset();
+                            },
+                          );
+                        }
+                      : null,
                   child: const Text(
                     "Reset",
                     overflow: TextOverflow.ellipsis,

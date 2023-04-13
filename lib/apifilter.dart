@@ -31,12 +31,18 @@ class ApiFilter {
     return filterData[attr][colname];
   }
 
+  bool isEmpty() {
+    return filterData.isEmpty;
+  }
+
   String toJsonStr() {
     return json.encode(filterData);
   }
 
   remove(String attr, String colname) {
-    if (filterData[attr][colname] != null) {
+    if (filterData.isNotEmpty &&
+        filterData.containsKey(attr) &&
+        filterData[attr][colname] != null) {
       Map map = filterData[attr];
 
       map.remove(colname);

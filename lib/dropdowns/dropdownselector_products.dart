@@ -189,7 +189,7 @@ class _DropDownSelectorProductsState extends State<DropDownSelectorProducts> {
                 return items.map(
                   (item) {
                     return Container(
-                      alignment: AlignmentDirectional.center,
+                      alignment: AlignmentDirectional.centerStart,
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Text(
                         getSelectedItemLabels().join(', '),
