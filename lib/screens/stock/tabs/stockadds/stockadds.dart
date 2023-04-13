@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:wuusu_shop_client/alert.dart';
 import 'package:wuusu_shop_client/apicall.dart';
+import 'package:wuusu_shop_client/apifilter.dart';
+import 'package:wuusu_shop_client/dropdowns/dropdownselector_products.dart';
+import 'package:wuusu_shop_client/dropdowns/dropdownselector_suppliers.dart';
 import 'package:wuusu_shop_client/screens/stock/tabs/stockadds/datagrid.dart';
+import 'package:wuusu_shop_client/screens/stock/tabs/stockadds/filtermenu.dart';
 import 'package:wuusu_shop_client/screens/stock/tabs/stockadds/gridsource.dart';
 import 'package:wuusu_shop_client/screens/stock/tabs/stockadds/rightmenu.dart';
 
@@ -32,7 +36,9 @@ class _StockAddsState extends State<StockAdds> {
 
   String searchValue = "";
 
-  bool isRightSideMenuOpened = false;
+  ApiFilter filter = ApiFilter();
+
+  int currentMenuIndex = 0;
 
   int currentPage = 1;
   int? totalPages;
@@ -47,8 +53,11 @@ class _StockAddsState extends State<StockAdds> {
     if (page <= 0 || (totalPages != null && page > totalPages!)) return [];
 
     try {
-      Map? data =
-          await widget.apiCall.get("/stock/records").param("page", page).call();
+      Map? data = await widget.apiCall
+          .get("/stock/records")
+          .param("page", page)
+          .param("filter", filter.toJsonStr())
+          .call();
 
       List records = data!['items'];
 
@@ -222,7 +231,7 @@ class _StockAddsState extends State<StockAdds> {
           AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeInOut,
-            width: !isRightSideMenuOpened ? 51 : 300,
+            width: currentMenuIndex == 0 ? 51 : 300,
             padding: const EdgeInsets.all(3),
             decoration: BoxDecoration(
               color: Colors.amber.withAlpha(50),
@@ -233,39 +242,67 @@ class _StockAddsState extends State<StockAdds> {
                 ),
               ),
             ),
-            child: !isRightSideMenuOpened
-                ? Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      IconButton(
-                        onPressed: !isFetching
-                            ? () {
-                                fetch(context);
-                              }
-                            : null,
-                        icon: const Icon(Icons.refresh),
-                      ),
-                      IconButton(
-                        onPressed: () {
+            child: IndexedStack(
+              index: currentMenuIndex,
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    IconButton(
+                      onPressed: !isFetching
+                          ? () {
+                              fetch(context);
+                            }
+                          : null,
+                      icon: const Icon(Icons.refresh),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        setState(() {
+                          currentMenuIndex = 2;
+                        });
+                      },
+                      icon: const Icon(Icons.filter_alt_outlined),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        setState(() {
+                          currentMenuIndex = 1;
+                        });
+                      },
+                      icon: const Icon(Icons.add),
+                    ),
+                  ],
+                ),
+                //### For only recreate RightMenu when it showing.
+                currentMenuIndex == 1
+                    ? RightMenu(
+                        apiCall: widget.apiCall,
+                        onClickAdd: (record, menu) {
+                          doAdd(record, menu);
+                        },
+                        onClose: () {
                           setState(() {
-                            isRightSideMenuOpened = true;
+                            currentMenuIndex = 0;
                           });
                         },
-                        icon: const Icon(Icons.add),
-                      ),
-                    ],
-                  )
-                : RightMenu(
-                    apiCall: widget.apiCall,
-                    onClickAdd: (record, menu) {
-                      doAdd(record, menu);
-                    },
-                    onClose: () {
-                      setState(() {
-                        isRightSideMenuOpened = false;
-                      });
-                    },
-                  ),
+                      )
+                    : Container(),
+                FilterMenu(
+                  apiCall: widget.apiCall,
+                  filter: filter,
+                  onFilterChange: (newfilter) {
+                    filter = newfilter;
+                    print(filter.toJsonStr());
+                  },
+                  onClose: () {
+                    setState(() {
+                      currentMenuIndex = 0;
+                    });
+                  },
+                ),
+              ],
+            ),
           ),
         ],
       ),
