@@ -7,6 +7,7 @@ import 'package:wuusu_shop_client/apifilter.dart';
 import 'package:wuusu_shop_client/dropdowns/controller.dart';
 import 'package:wuusu_shop_client/dropdowns/dropdownselector_products.dart';
 import 'package:wuusu_shop_client/dropdowns/dropdownselector_suppliers.dart';
+import 'package:wuusu_shop_client/dropdowns/dropdownselector_users.dart';
 
 class FilterMenu extends StatefulWidget {
   final ApiCall apiCall;
@@ -30,7 +31,7 @@ class FilterMenu extends StatefulWidget {
 class _FilterMenuState extends State<FilterMenu> {
   DropDownSelectorController dropDownSelectorControllerProducts =
       DropDownSelectorController();
-  DropDownSelectorController dropDownSelectorControllerSuppliers =
+  DropDownSelectorController dropDownSelectorControllerUsers =
       DropDownSelectorController();
 
   DateRangePickerController dateRangePickerController =
@@ -45,7 +46,7 @@ class _FilterMenuState extends State<FilterMenu> {
   onAddResult(Map? object) {
     if (object != null) {
       dropDownSelectorControllerProducts.reset();
-      dropDownSelectorControllerSuppliers.reset();
+      dropDownSelectorControllerUsers.reset();
       setState(() {
         qtyInput = "";
       });
@@ -54,7 +55,7 @@ class _FilterMenuState extends State<FilterMenu> {
 
   reset() {
     dropDownSelectorControllerProducts.reset();
-    dropDownSelectorControllerSuppliers.reset();
+    dropDownSelectorControllerUsers.reset();
     clearDateSelects();
     widget.onClickFilter();
   }
@@ -119,20 +120,20 @@ class _FilterMenuState extends State<FilterMenu> {
               const SizedBox(
                 height: 10,
               ),
-              const Text("By Suppliers:"),
+              const Text("By Users:"),
               const SizedBox(height: 6),
               Container(
                 width: double.infinity,
-                child: DropDownSelectorSuppliers(
+                child: DropDownSelectorUsers(
                   apiCall: widget.apiCall,
-                  controller: dropDownSelectorControllerSuppliers,
+                  controller: dropDownSelectorControllerUsers,
                   multiSelectMode: true,
                   onSelected: (List? suppliers) {
                     if (suppliers == null || suppliers.isEmpty) {
-                      widget.filter.remove('in', 'supplier_id');
+                      widget.filter.remove('in', 'ref_id');
                     } else {
-                      widget.filter.setIn('supplier_id',
-                          suppliers.map((e) => e['id']).toList());
+                      widget.filter.setIn(
+                          'ref_id', suppliers.map((e) => e['id']).toList());
                     }
 
                     widget.onFilterChange(widget.filter);

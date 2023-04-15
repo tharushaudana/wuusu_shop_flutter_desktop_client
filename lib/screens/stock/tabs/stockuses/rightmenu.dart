@@ -26,17 +26,17 @@ class _RightMenuState extends State<RightMenu> {
 
   DropDownSelectorController dropDownSelectorControllerProducts =
       DropDownSelectorController();
-  DropDownSelectorController dropDownSelectorControllerSuppliers =
+  DropDownSelectorController dropDownSelectorControllerUsers =
       DropDownSelectorController();
 
   int? product_id;
-  int? supplier_id;
   String qtyInput = "";
+  String descriptionInput = "";
 
   onAddResult(Map? object) {
     if (object != null) {
       dropDownSelectorControllerProducts.reset();
-      dropDownSelectorControllerSuppliers.reset();
+      dropDownSelectorControllerUsers.reset();
       setState(() {
         qtyInput = "";
       });
@@ -62,7 +62,7 @@ class _RightMenuState extends State<RightMenu> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            "Add Stock",
+            "Add Stock Use",
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.bold,
@@ -87,24 +87,6 @@ class _RightMenuState extends State<RightMenu> {
                     onSelected: (product) {
                       setState(() {
                         product_id = product == null ? null : product['id'];
-                      });
-                    },
-                  ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                const Text("Supplier:"),
-                const SizedBox(height: 6),
-                Container(
-                  width: double.infinity,
-                  child: DropDownSelectorSuppliers(
-                    apiCall: widget.apiCall,
-                    controller: dropDownSelectorControllerSuppliers,
-                    multiSelectMode: false,
-                    onSelected: (supplier) {
-                      setState(() {
-                        supplier_id = supplier == null ? null : supplier['id'];
                       });
                     },
                   ),
@@ -145,13 +127,51 @@ class _RightMenuState extends State<RightMenu> {
                     ),
                     hintText: 'Enter Quantity here',
                     labelText: 'Quantity',
-                    errorText: qtyInput.length == 0
+                    errorText: qtyInput.isEmpty
                         ? null
                         : int.tryParse(qtyInput) == null
                             ? "invalid value!"
                             : int.tryParse(qtyInput)! <= 0
                                 ? "quantity must be more than 0"
                                 : null,
+                  ),
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                TextFormField(
+                  onChanged: (value) => setState(() {
+                    descriptionInput = value;
+                  }),
+                  controller: TextEditingController.fromValue(
+                    TextEditingValue(
+                      text: descriptionInput,
+                      selection: TextSelection.fromPosition(
+                        TextPosition(
+                          offset: descriptionInput.length,
+                        ),
+                      ),
+                    ),
+                  ),
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.grey,
+                      ),
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(3.0),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.blue,
+                      ),
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(3.0),
+                      ),
+                    ),
+                    hintText: 'Enter Description here',
+                    labelText: 'Description',
                   ),
                 ),
               ],
@@ -166,14 +186,14 @@ class _RightMenuState extends State<RightMenu> {
                 child: FilledButton(
                   onPressed: !isDoing &&
                           (product_id != null &&
-                              supplier_id != null &&
                               (int.tryParse(qtyInput) != null &&
-                                  int.tryParse(qtyInput)! > 0))
+                                  int.tryParse(qtyInput)! > 0)) &&
+                          descriptionInput.trim().isNotEmpty
                       ? () {
                           Map record = {
                             'product_id': product_id,
-                            'supplier_id': supplier_id,
-                            'qty': int.parse(qtyInput)
+                            'qty': int.parse(qtyInput),
+                            'description': descriptionInput.trim(),
                           };
 
                           setState(() => isDoing = true);
