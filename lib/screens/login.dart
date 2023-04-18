@@ -19,12 +19,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool isLogging = false;
 
-  doLogin(BuildContext context) {
+  doLogin(BuildContext context) async {
     setState(() {
       isLogging = true;
     });
 
-    apiCall.post("/login").data("email", email).data("password", password).on(
+    /*apiCall.post("/login").data("email", email).data("password", password).on(
       success: (Map? data) async {
         await storage.save("token", data!["token"]);
         apiCall.setToken(data["token"]);
@@ -36,7 +36,24 @@ class _LoginScreenState extends State<LoginScreen> {
         });
         Alert.show("Login failed", msg, context);
       },
-    );
+    );*/
+
+    try {
+      Map? data = await apiCall
+          .post("/login")
+          .data("email", email)
+          .data("password", password)
+          .call();
+
+      await storage.save("token", data!["token"]);
+      apiCall.setToken(data["token"]);
+      openHomeScreen(context, data["user"]);
+    } catch (e) {
+      setState(() {
+        isLogging = false;
+      });
+      Alert.show("Login failed", e.toString(), context);
+    }
   }
 
   openHomeScreen(BuildContext context, Map user) {

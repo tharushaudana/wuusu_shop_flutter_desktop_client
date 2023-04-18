@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 
 final String API_URL = "https://indev.ctec.lk/wuusu_shop_ctec/public/api";
@@ -71,21 +72,62 @@ class ApiRequest {
     return this;
   }
 
-  Future<Map?> call() async {
+  /*Future<Map?> call() async {
     Map? data = await _call();
     return data;
-  }
+  }*/
 
-  Future<void> on({required success, required error}) async {
+  Future<Map?> call() async {
+    http.StreamedResponse? response = await _call();
+
+    String str = await response!.stream.bytesToString();
+
+    //print(str);
+
+    Map jmap = {};
+
     try {
-      Map? data = await _call();
-      success(data);
+      jmap = json.decode(str);
     } catch (e) {
-      error(e.toString());
+      throw ApiException("Invalid response. Can't decode!");
+    }
+
+    if (jmap["status"] == "success") {
+      return jmap["data"];
+    } else if (jmap["status"] == "error") {
+      Map? errors = jmap["errors"];
+
+      if (errors == null) throw ApiException(jmap["message"]);
+
+      throw ApiException(errors[errors.keys.first][0]
+          .toString()); //### throw first error of errors.
+    } else {
+      throw ApiException("Invalid response. Can't find expected status!");
     }
   }
 
-  Future<Map?> _call() async {
+  Future<Uint8List?> callForBytes() async {
+    http.StreamedResponse? response = await _call();
+    return response!.stream.toBytes();
+  }
+
+  Future<http.StreamedResponse?> _call() async {
+    Request request = Request(
+        path: path,
+        params: this._params,
+        headers: this._headers,
+        data: this._data);
+
+    http.StreamedResponse? response = await request.call(method);
+
+    if (response == null) {
+      throw ApiException("Request failed. Unknown error!");
+    }
+
+    return response;
+  }
+
+  /*Future<Map?> _call() async {
     Request request = Request(
         path: path,
         params: this._params,
@@ -122,7 +164,7 @@ class ApiRequest {
     } else {
       throw ApiException("Invalid response. Can't find expected status!");
     }
-  }
+  }*/
 }
 
 class Request {

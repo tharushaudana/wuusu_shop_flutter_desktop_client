@@ -35,10 +35,13 @@ dependencies:
   tabbed_view: ^1.16.0+1
   syncfusion_flutter_datagrid: ^21.1.38
   syncfusion_flutter_datepicker: ^21.1.39
+  syncfusion_flutter_pdfviewer: ^21.1.39
+  printing: ^5.10.3
   intl: ^0.18.0
   provider: ^6.0.5
   dropdown_button2: ^2.0.0
   blurrycontainer: ^1.0.2
+  desktop_multi_window: ^0.2.0
 
 
   # The following adds the Cupertino Icons font to your application.
