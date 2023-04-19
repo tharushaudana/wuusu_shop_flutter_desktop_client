@@ -59,10 +59,12 @@ class _DropDownSelectorSuppliersState extends State<DropDownSelectorSuppliers> {
     super.initState();
 
     widget.controller.onReset(() {
-      widget.onSelected(null);
-      setState(() {
-        selectedItemIndex = null;
-        selectedItemsIndexes = [];
+      safeCall(() {
+        widget.onSelected(null);
+        setState(() {
+          selectedItemIndex = null;
+          selectedItemsIndexes = [];
+        });
       });
     });
 

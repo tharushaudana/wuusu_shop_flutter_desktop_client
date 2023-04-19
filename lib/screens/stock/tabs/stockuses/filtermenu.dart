@@ -37,21 +37,7 @@ class _FilterMenuState extends State<FilterMenu> {
   DateRangePickerController dateRangePickerController =
       DateRangePickerController();
 
-  int? product_id;
-  int? supplier_id;
-  String qtyInput = "";
-
   bool isDateRangeMode = false;
-
-  onAddResult(Map? object) {
-    if (object != null) {
-      dropDownSelectorControllerProducts.reset();
-      dropDownSelectorControllerUsers.reset();
-      setState(() {
-        qtyInput = "";
-      });
-    }
-  }
 
   reset() {
     dropDownSelectorControllerProducts.reset();

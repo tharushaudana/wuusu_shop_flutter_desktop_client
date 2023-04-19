@@ -14,14 +14,9 @@ class GridSource extends DataGridSource {
             for (String columnName in columnNames)
               DataGridCell(
                   columnName: columnName,
-                  value: columnName == 'product'
-                      ? {
-                          'itemcode': e[columnName]['itemcode'],
-                          'description': e[columnName]['description'],
-                        }
-                      : columnName == 'supplier'
-                          ? e[columnName]['name']
-                          : e[columnName])
+                  value: columnName == 'customer'
+                      ? e[columnName]['name']
+                      : e[columnName])
           ]))
       .toList();
 
@@ -81,36 +76,7 @@ class GridSource extends DataGridSource {
     return DataGridRowAdapter(
         cells: row.getCells().map<Widget>(
       (e) {
-        if (e.columnName == 'product') {
-          return MouseRegion(
-            cursor: SystemMouseCursors.click,
-            child: GestureDetector(
-              onTap: () {
-                String msg =
-                    "Item Code: ${e.value['itemcode']}\nDescription: ${e.value['description']}";
-                Alert.show("Product Details", msg, context);
-              },
-              child: Container(
-                color: Colors.amber.withOpacity(0.6),
-                alignment: Alignment.center,
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      e.value['itemcode'],
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const Text(
-                      "click here",
-                      style: TextStyle(fontSize: 10),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        } else if (e.columnName == 'supplier') {
+        if (e.columnName == 'customer') {
           return Container(
             color: Colors.amber.withOpacity(0.5),
             alignment: Alignment.center,
@@ -120,7 +86,7 @@ class GridSource extends DataGridSource {
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
           );
-        } else if (e.columnName == 'qty') {
+        } else if (e.columnName == 'title') {
           return Container(
             color: Colors.amber.withOpacity(0.2),
             alignment: Alignment.center,

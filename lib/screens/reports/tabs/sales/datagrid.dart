@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:blurrycontainer/blurrycontainer.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
@@ -7,10 +5,14 @@ import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 class DataGrid extends StatefulWidget {
   final List columnNames;
   final DataGridSource source;
+  final onClickViewPdf;
+  final onClickDelete;
 
   DataGrid({
     required this.columnNames,
     required this.source,
+    required this.onClickViewPdf,
+    required this.onClickDelete,
   });
 
   @override
@@ -44,10 +46,37 @@ class _DataGridState extends State<DataGrid> {
     return SfDataGrid(
       source: widget.source,
       columnWidthMode: ColumnWidthMode.auto,
-      frozenColumnsCount: 2,
+      frozenColumnsCount: 1,
       allowSorting: true,
       allowMultiColumnSorting: true,
       allowColumnsResizing: true,
+      allowSwiping: true,
+      swipeMaxOffset: 100.0,
+      startSwipeActionsBuilder: (
+        BuildContext context,
+        DataGridRow row,
+        int rowIndex,
+      ) {
+        return Row(
+          children: [
+            const Spacer(),
+            IconButton(
+              onPressed: () {
+                widget.onClickViewPdf(row.getCells()[0].value);
+              },
+              color: Colors.blue,
+              icon: const Icon(Icons.document_scanner),
+            ),
+            IconButton(
+              onPressed: () {
+                widget.onClickDelete(row.getCells()[0].value);
+              },
+              color: Colors.red,
+              icon: const Icon(Icons.delete),
+            ),
+          ],
+        );
+      },
       onColumnResizeUpdate: (ColumnResizeUpdateDetails details) {
         setState(() {
           columnWidths[details.column.columnName] = details.width;

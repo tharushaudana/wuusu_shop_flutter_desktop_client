@@ -4,6 +4,7 @@ import 'package:tabbed_view/tabbed_view.dart';
 import 'package:wuusu_shop_client/apicall.dart';
 import 'package:wuusu_shop_client/main.dart';
 import 'package:wuusu_shop_client/pdfviewer/pdfviewer.dart';
+import 'package:wuusu_shop_client/screens/reports/tabs/sales/sales.dart';
 
 class ReportsScreen extends StatefulWidget {
   final ApiCall apiCall;
@@ -26,22 +27,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
     tabs.add(
       TabData(
         closable: false,
-        text: 'Invoices',
-        /*content: PdfViewer(
+        text: 'Sales',
+        content: Sales(
           apiCall: widget.apiCall,
-          invoice_id: "QUO-20230329-0001",
-          theme: "ctec",
-        ),*/
-        content: TextButton(
-            onPressed: () {
-              PdfViewer.show(
-                context: context,
-                apiCall: widget.apiCall,
-                invoice_id: "QUO-20230329-0001",
-                theme: "ctec",
-              );
-            },
-            child: Text("click")),
+        ),
         keepAlive: true,
       ),
     );

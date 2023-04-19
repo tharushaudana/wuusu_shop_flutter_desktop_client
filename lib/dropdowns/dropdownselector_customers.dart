@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:wuusu_shop_client/apicall.dart';
 import 'package:wuusu_shop_client/dropdowns/controller.dart';
 
-class DropDownSelectorUsers extends StatefulWidget {
+class DropDownSelectorCustomers extends StatefulWidget {
   final ApiCall apiCall;
   final DropDownSelectorController controller;
   final onSelected;
   bool multiSelectMode = false;
 
-  DropDownSelectorUsers({
+  DropDownSelectorCustomers({
     required this.apiCall,
     required this.controller,
     required this.multiSelectMode,
@@ -17,10 +17,10 @@ class DropDownSelectorUsers extends StatefulWidget {
   });
 
   @override
-  State<StatefulWidget> createState() => _DropDownSelectorUsersState();
+  State<StatefulWidget> createState() => _DropDownSelectorCustomersState();
 }
 
-class _DropDownSelectorUsersState extends State<DropDownSelectorUsers> {
+class _DropDownSelectorCustomersState extends State<DropDownSelectorCustomers> {
   bool isDisposed = false;
   bool isFetching = false;
 
@@ -40,10 +40,10 @@ class _DropDownSelectorUsersState extends State<DropDownSelectorUsers> {
     safeCall(() => setState(() => isFetching = true));
 
     try {
-      Map? data = await widget.apiCall.get("/users").call();
+      Map? data = await widget.apiCall.get("/customers").call();
 
       safeCall(() {
-        items = data!['users'];
+        items = data!['customers'];
         setState(() => isFetching = false);
       });
     } catch (e) {
@@ -106,7 +106,7 @@ class _DropDownSelectorUsersState extends State<DropDownSelectorUsers> {
                 ? null
                 : selectedItemsIndexes.last,
         hint: Text(
-          isFetching ? 'Loading Users...' : 'Select a User',
+          isFetching ? 'Loading Customers...' : 'Select a Customer',
           style: TextStyle(
             fontSize: 14,
             color: Theme.of(context).hintColor,

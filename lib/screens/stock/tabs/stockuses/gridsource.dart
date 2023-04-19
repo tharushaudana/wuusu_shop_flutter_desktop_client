@@ -91,7 +91,7 @@ class GridSource extends DataGridSource {
                 Alert.show("Product Details", msg, context);
               },
               child: Container(
-                color: Colors.amber.withOpacity(0.8),
+                color: Colors.amber.withOpacity(0.6),
                 alignment: Alignment.center,
                 padding: const EdgeInsets.all(8.0),
                 child: Column(

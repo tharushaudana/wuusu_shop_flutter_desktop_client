@@ -13,6 +13,11 @@ class ApiFilter {
     filterData['equal'][colname] = value.toString();
   }
 
+  setLike(String colname, value) {
+    _addFilterAttribute('like');
+    filterData['like'][colname] = value.toString();
+  }
+
   setDate({
     required String colname,
     required String dstart,

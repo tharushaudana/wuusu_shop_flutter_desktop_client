@@ -42,7 +42,7 @@ class _DataGridState extends State<DataGrid> {
     return SfDataGrid(
       source: widget.source,
       columnWidthMode: ColumnWidthMode.auto,
-      //frozenColumnsCount: 1,
+      frozenColumnsCount: 2,
       allowSorting: true,
       allowMultiColumnSorting: true,
       allowColumnsResizing: true,
