@@ -6,20 +6,20 @@ import 'package:wuusu_shop_client/apifilter.dart';
 import 'package:wuusu_shop_client/dropdowns/dropdownselector_products.dart';
 import 'package:wuusu_shop_client/dropdowns/dropdownselector_suppliers.dart';
 import 'package:wuusu_shop_client/pdfviewer/pdfviewer.dart';
-import 'package:wuusu_shop_client/screens/reports/tabs/sales/datagrid.dart';
-import 'package:wuusu_shop_client/screens/reports/tabs/sales/filtermenu.dart';
-import 'package:wuusu_shop_client/screens/reports/tabs/sales/gridsource.dart';
+import 'package:wuusu_shop_client/screens/reports/tabs/quotations/datagrid.dart';
+import 'package:wuusu_shop_client/screens/reports/tabs/quotations/filtermenu.dart';
+import 'package:wuusu_shop_client/screens/reports/tabs/quotations/gridsource.dart';
 
-class Sales extends StatefulWidget {
+class Quotations extends StatefulWidget {
   final ApiCall apiCall;
 
-  Sales({required this.apiCall});
+  Quotations({required this.apiCall});
 
   @override
-  State<StatefulWidget> createState() => _SalesState();
+  State<StatefulWidget> createState() => _QuotationsState();
 }
 
-class _SalesState extends State<Sales> {
+class _QuotationsState extends State<Quotations> {
   bool isFetching = false;
 
   bool isDisposed = false;
@@ -28,6 +28,7 @@ class _SalesState extends State<Sales> {
     'invoice_id',
     'customer',
     'title',
+    'validuntil',
     'created_at',
     'updated_at',
   ];
@@ -54,7 +55,7 @@ class _SalesState extends State<Sales> {
 
     try {
       Map? data = await widget.apiCall
-          .get("/sales")
+          .get("/quotations")
           .param("page", page)
           .param("filter", filter.toJsonStr())
           .call();

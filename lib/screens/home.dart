@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:wuusu_shop_client/apicall.dart';
 import 'package:wuusu_shop_client/main.dart';
 import 'package:wuusu_shop_client/screens/inventory/inventory.dart';
+import 'package:wuusu_shop_client/screens/make/make.dart';
 import 'package:wuusu_shop_client/screens/reports/reports.dart';
 import 'package:wuusu_shop_client/screens/stock/stock.dart';
 
@@ -118,7 +119,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ? ReportsScreen(
                                           apiCall: widget.apiCall,
                                         )
-                                      : Container(),
+                                      : selectedSideMenuItem == 3
+                                          ? MakeScreen(
+                                              apiCall: widget.apiCall,
+                                            )
+                                          : Container(),
                         ),
                       ],
                     ),

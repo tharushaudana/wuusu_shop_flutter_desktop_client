@@ -5,13 +5,11 @@ import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 class DataGrid extends StatefulWidget {
   final List columnNames;
   final DataGridSource source;
-  final onClickViewPdf;
   final onClickDelete;
 
   DataGrid({
     required this.columnNames,
     required this.source,
-    required this.onClickViewPdf,
     required this.onClickDelete,
   });
 
@@ -46,7 +44,7 @@ class _DataGridState extends State<DataGrid> {
     return SfDataGrid(
       source: widget.source,
       columnWidthMode: ColumnWidthMode.auto,
-      frozenColumnsCount: 1,
+      frozenColumnsCount: 2,
       allowSorting: true,
       allowMultiColumnSorting: true,
       allowColumnsResizing: true,
@@ -62,10 +60,10 @@ class _DataGridState extends State<DataGrid> {
             const Spacer(),
             IconButton(
               onPressed: () {
-                widget.onClickViewPdf(row.getCells()[0].value);
+                widget.onClickDelete(row.getCells()[0].value);
               },
-              color: Colors.blue,
-              icon: const Icon(Icons.document_scanner),
+              color: Colors.red,
+              icon: const Icon(Icons.delete),
             ),
           ],
         );
@@ -76,33 +74,19 @@ class _DataGridState extends State<DataGrid> {
         });
         return true;
       },
-      loadMoreViewBuilder: (BuildContext context, LoadMoreRows loadMoreRows) {
-        Future<String> loadRows() async {
-          await loadMoreRows();
-          return Future<String>.value('Completed');
-        }
-
-        return FutureBuilder<String>(
-            initialData: 'loading',
-            future: loadRows(),
-            builder: (context, snapShot) {
-              if (snapShot.data == 'loading') {
-                return BlurryContainer(
-                  blur: 5,
-                  width: double.infinity,
-                  height: 60,
-                  elevation: 0,
-                  color: Colors.transparent,
-                  child: Container(
-                    alignment: Alignment.center,
-                    child: CircularProgressIndicator(),
-                  ),
-                );
-              } else {
-                return SizedBox.fromSize(size: Size.zero);
-              }
-            });
-      },
+      tableSummaryRows: [
+        GridTableSummaryRow(
+            showSummaryInRow: true,
+            title: 'Total Payable: Rs.{Sum}',
+            columns: [
+              GridSummaryColumn(
+                name: 'Sum',
+                columnName: 'total',
+                summaryType: GridSummaryType.sum,
+              )
+            ],
+            position: GridTableSummaryRowPosition.bottom)
+      ],
       columns: <GridColumn>[
         for (String columnName in widget.columnNames)
           GridColumn(

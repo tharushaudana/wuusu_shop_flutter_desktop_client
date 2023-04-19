@@ -4,6 +4,7 @@ import 'package:tabbed_view/tabbed_view.dart';
 import 'package:wuusu_shop_client/apicall.dart';
 import 'package:wuusu_shop_client/main.dart';
 import 'package:wuusu_shop_client/pdfviewer/pdfviewer.dart';
+import 'package:wuusu_shop_client/screens/reports/tabs/quotations/quotations.dart';
 import 'package:wuusu_shop_client/screens/reports/tabs/sales/sales.dart';
 
 class ReportsScreen extends StatefulWidget {
@@ -39,7 +40,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
       TabData(
         closable: false,
         text: 'Quotations',
-        content: Text("quotations"),
+        content: Quotations(
+          apiCall: widget.apiCall,
+        ),
         keepAlive: true,
       ),
     );

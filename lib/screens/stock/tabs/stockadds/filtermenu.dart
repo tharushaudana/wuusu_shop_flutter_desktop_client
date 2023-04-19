@@ -11,14 +11,12 @@ import 'package:wuusu_shop_client/dropdowns/dropdownselector_suppliers.dart';
 class FilterMenu extends StatefulWidget {
   final ApiCall apiCall;
   final ApiFilter filter;
-  final onFilterChange;
   final onClickFilter;
   final onClose;
 
   FilterMenu({
     required this.apiCall,
     required this.filter,
-    required this.onFilterChange,
     required this.onClickFilter,
     required this.onClose,
   });
@@ -96,8 +94,6 @@ class _FilterMenuState extends State<FilterMenu> {
                           'product_id', products.map((e) => e['id']).toList());
                     }
 
-                    widget.onFilterChange(widget.filter);
-
                     setState(() {});
                   },
                 ),
@@ -120,8 +116,6 @@ class _FilterMenuState extends State<FilterMenu> {
                       widget.filter.setIn('supplier_id',
                           suppliers.map((e) => e['id']).toList());
                     }
-
-                    widget.onFilterChange(widget.filter);
 
                     setState(() {});
                   },
@@ -206,8 +200,6 @@ class _FilterMenuState extends State<FilterMenu> {
                     } else if (args.value == null) {
                       widget.filter.remove('date', 'created_at');
                     }
-
-                    widget.onFilterChange(widget.filter);
                   },
                   allowViewNavigation: true,
                   selectionMode: isDateRangeMode

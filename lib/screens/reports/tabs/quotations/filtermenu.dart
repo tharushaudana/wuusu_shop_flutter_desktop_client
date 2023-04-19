@@ -1,3 +1,4 @@
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
@@ -38,6 +39,7 @@ class _FilterMenuState extends State<FilterMenu> {
 
   String invoiceIdInput = "";
   String titleInput = "";
+  String validUntilSelectedValue = "none";
 
   bool isDateRangeMode = false;
 
@@ -52,12 +54,15 @@ class _FilterMenuState extends State<FilterMenu> {
     setState(() {
       invoiceIdInput = "";
       titleInput = "";
+      validUntilSelectedValue = "none";
       dateRangePickerController.selectedRange = null;
       dateRangePickerController.selectedDate = null;
     });
 
     widget.filter.remove("equal", "invoice_id");
     widget.filter.remove("like", "title");
+    widget.filter.remove('datepast', 'validuntil');
+    widget.filter.remove('datenotpast', 'validuntil');
   }
 
   @override
@@ -75,7 +80,7 @@ class _FilterMenuState extends State<FilterMenu> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            "Filter Sales",
+            "Filter Quotations",
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.bold,
@@ -228,6 +233,65 @@ class _FilterMenuState extends State<FilterMenu> {
 
                               setState(() {});
                             },
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        const Text("By ValidUntil:"),
+                        DropdownButtonHideUnderline(
+                          child: DropdownButton2(
+                            hint: Text(
+                              'Select Item',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Theme.of(context).hintColor,
+                              ),
+                            ),
+                            items: ['none', 'Expired only', 'Not expired only']
+                                .map((item) => DropdownMenuItem<String>(
+                                      value: item,
+                                      child: Text(
+                                        item,
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ))
+                                .toList(),
+                            value: validUntilSelectedValue,
+                            isExpanded: true,
+                            onChanged: (value) {
+                              setState(() {
+                                validUntilSelectedValue = value as String;
+                              });
+
+                              switch (value) {
+                                case 'none':
+                                  widget.filter
+                                      .remove('datepast', 'validuntil');
+                                  widget.filter
+                                      .remove('datenotpast', 'validuntil');
+                                  break;
+                                case 'Expired only':
+                                  widget.filter
+                                      .remove('datenotpast', 'validuntil');
+                                  widget.filter.addDatePast('validuntil');
+                                  break;
+                                case 'Not expired only':
+                                  widget.filter
+                                      .remove('datepast', 'validuntil');
+                                  widget.filter.addDateNotPast('validuntil');
+                                  break;
+                              }
+                            },
+                            buttonStyleData: const ButtonStyleData(
+                              height: 40,
+                              width: 140,
+                            ),
+                            menuItemStyleData: const MenuItemStyleData(
+                              height: 40,
+                            ),
                           ),
                         ),
                         const SizedBox(

@@ -297,9 +297,6 @@ class _StockUsesState extends State<StockUses> {
                 FilterMenu(
                   apiCall: widget.apiCall,
                   filter: filter,
-                  onFilterChange: (newfilter) {
-                    filter = newfilter;
-                  },
                   onClickFilter: () {
                     fetch(context);
                   },
