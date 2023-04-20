@@ -1,7 +1,9 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:wuusu_shop_client/alert.dart';
 import 'package:wuusu_shop_client/apicall.dart';
 import 'package:wuusu_shop_client/dropdowns/controller.dart';
+import 'package:wuusu_shop_client/funcs.dart';
 
 class DropDownSelectorCustomers extends StatefulWidget {
   final ApiCall apiCall;
@@ -220,22 +222,52 @@ class _DropDownSelectorCustomersState extends State<DropDownSelectorCustomers> {
                     right: 8,
                     left: 8,
                   ),
-                  child: TextFormField(
-                    expands: true,
-                    maxLines: null,
-                    controller: searchController,
-                    decoration: InputDecoration(
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 5,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          expands: true,
+                          maxLines: null,
+                          controller: searchController,
+                          decoration: InputDecoration(
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 5,
+                            ),
+                            hintText: 'Search...',
+                            hintStyle: const TextStyle(fontSize: 12),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
                       ),
-                      hintText: 'Search...',
-                      hintStyle: const TextStyle(fontSize: 12),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
+                      !widget.multiSelectMode
+                          ? TextButton(
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  builder: (dcontext) {
+                                    return AddCustomerDialog(
+                                      apiCall: widget.apiCall,
+                                      onAdded: (customer) {
+                                        setState(() {
+                                          items.insert(0, customer);
+                                          selectedItemIndex = 0;
+                                        });
+
+                                        widget.onSelected(customer);
+                                      },
+                                    );
+                                  },
+                                );
+                              },
+                              child: Text("New"),
+                            )
+                          : Container()
+                    ],
                   ),
                 ),
                 searchMatchFn: (item, searchValue) {
@@ -253,6 +285,280 @@ class _DropDownSelectorCustomersState extends State<DropDownSelectorCustomers> {
           }
         },
       ),
+    );
+  }
+}
+
+class AddCustomerDialog extends StatefulWidget {
+  final ApiCall apiCall;
+  final onAdded;
+
+  AddCustomerDialog({
+    required this.apiCall,
+    required this.onAdded,
+  });
+
+  @override
+  State<StatefulWidget> createState() => _AddCustomerDialogState();
+}
+
+class _AddCustomerDialogState extends State<AddCustomerDialog> {
+  bool isDisposed = false;
+
+  bool isDoing = false;
+
+  String nameInput = "";
+  String addressInput = "";
+  String phoneInput = "";
+  String emailInput = "";
+
+  safeCall(func) {
+    if (isDisposed) return;
+    func();
+  }
+
+  doAdd(Map customer) async {
+    safeCall(() {
+      setState(() {
+        isDoing = true;
+      });
+    });
+
+    try {
+      Map? data =
+          await widget.apiCall.post('/customers').object(customer).call();
+
+      safeCall(() {
+        widget.onAdded(data!['customer']);
+        Navigator.of(context).pop();
+      });
+    } catch (e) {
+      safeCall(() {
+        setState(() {
+          isDoing = false;
+        });
+
+        Alert.show("Unable to Add", e.toString(), context);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    isDisposed = true;
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text("Add New Customer"),
+      content: SizedBox(
+        width: 300,
+        height: 400,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextFormField(
+              onChanged: (value) => setState(() {
+                nameInput = value;
+              }),
+              controller: TextEditingController.fromValue(
+                TextEditingValue(
+                  text: nameInput,
+                  selection: TextSelection.fromPosition(
+                    TextPosition(
+                      offset: nameInput.length,
+                    ),
+                  ),
+                ),
+              ),
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.grey,
+                  ),
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(3.0),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.blue,
+                  ),
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(3.0),
+                  ),
+                ),
+                hintText: 'Enter Name here',
+                labelText: 'Name',
+              ),
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            TextFormField(
+              onChanged: (value) => setState(() {
+                addressInput = value;
+              }),
+              controller: TextEditingController.fromValue(
+                TextEditingValue(
+                  text: addressInput,
+                  selection: TextSelection.fromPosition(
+                    TextPosition(
+                      offset: addressInput.length,
+                    ),
+                  ),
+                ),
+              ),
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.grey,
+                  ),
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(3.0),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.blue,
+                  ),
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(3.0),
+                  ),
+                ),
+                hintText: 'Enter Address here',
+                labelText: 'Address',
+              ),
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            TextFormField(
+              onChanged: (value) => setState(() {
+                phoneInput = value;
+              }),
+              controller: TextEditingController.fromValue(
+                TextEditingValue(
+                  text: phoneInput,
+                  selection: TextSelection.fromPosition(
+                    TextPosition(
+                      offset: phoneInput.length,
+                    ),
+                  ),
+                ),
+              ),
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.grey,
+                  ),
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(3.0),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.blue,
+                  ),
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(3.0),
+                  ),
+                ),
+                hintText: 'Enter Phone Number here',
+                labelText: 'Phone',
+              ),
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            TextFormField(
+              onChanged: (value) => setState(() {
+                emailInput = value;
+              }),
+              controller: TextEditingController.fromValue(
+                TextEditingValue(
+                  text: emailInput,
+                  selection: TextSelection.fromPosition(
+                    TextPosition(
+                      offset: emailInput.length,
+                    ),
+                  ),
+                ),
+              ),
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.grey,
+                  ),
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(3.0),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.blue,
+                  ),
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(3.0),
+                  ),
+                ),
+                hintText: 'Enter Email here',
+                labelText: 'Email',
+                errorText: emailInput.isEmpty
+                    ? null
+                    : !Funcs.isValidEmail(emailInput)
+                        ? "invalid email!"
+                        : null,
+              ),
+            ),
+            SizedBox(
+              height: 15,
+            ),
+            FilledButton(
+              onPressed: nameInput.trim().isEmpty ||
+                      (emailInput.isNotEmpty &&
+                          !Funcs.isValidEmail(emailInput)) ||
+                      isDoing
+                  ? null
+                  : () {
+                      doAdd({
+                        'name': nameInput.trim(),
+                        'address': addressInput.trim(),
+                        'phone': phoneInput.trim(),
+                        'email': emailInput.trim(),
+                      });
+                    },
+              child: !isDoing
+                  ? const Text(
+                      "Done",
+                      overflow: TextOverflow.ellipsis,
+                    )
+                  : Container(
+                      width: 20,
+                      height: 20,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 1,
+                      ),
+                    ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: isDoing
+              ? null
+              : () {
+                  Navigator.of(context).pop();
+                },
+          child: Text(
+            "Close",
+            style: TextStyle(color: Colors.red),
+          ),
+        ),
+      ],
     );
   }
 }

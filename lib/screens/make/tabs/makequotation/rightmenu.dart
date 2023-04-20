@@ -8,13 +8,17 @@ class RightMenu extends StatefulWidget {
   final ApiCall apiCall;
   final onClickAdd;
   final onCustomerSelected;
+  final onValidUntilSelected;
   final bool hideCustomerSelector;
+  final bool hideValidUntil;
 
   RightMenu({
     required this.apiCall,
     required this.onClickAdd,
     required this.onCustomerSelected,
+    required this.onValidUntilSelected,
     required this.hideCustomerSelector,
+    required this.hideValidUntil,
   });
 
   @override
@@ -22,6 +26,8 @@ class RightMenu extends StatefulWidget {
 }
 
 class _RightMenuState extends State<RightMenu> {
+  final RegExp dateFormat = RegExp(r'^\d{4}-\d{2}-\d{2}$'); // yyyy-mm-dd
+
   DropDownSelectorController dropDownSelectorControllerProducts =
       DropDownSelectorController();
   DropDownSelectorController dropDownSelectorControllerCustomers =
@@ -30,6 +36,7 @@ class _RightMenuState extends State<RightMenu> {
   Map? product;
   String qtyInput = "";
   String discountInput = "";
+  String validUntilInput = "";
 
   clear() {
     setState(() {
@@ -223,9 +230,60 @@ class _RightMenuState extends State<RightMenu> {
                         },
                       ),
                     ),
+                    const SizedBox(
+                      height: 10,
+                    ),
                   ],
                 )
-              : Container()
+              : Container(),
+          !widget.hideValidUntil
+              ? TextFormField(
+                  onChanged: (value) => setState(() {
+                    validUntilInput = value;
+
+                    if (dateFormat.hasMatch(value)) {
+                      widget.onValidUntilSelected(value);
+                    } else {
+                      widget.onValidUntilSelected(null);
+                    }
+                  }),
+                  controller: TextEditingController.fromValue(
+                    TextEditingValue(
+                      text: validUntilInput,
+                      selection: TextSelection.fromPosition(
+                        TextPosition(
+                          offset: validUntilInput.length,
+                        ),
+                      ),
+                    ),
+                  ),
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.grey,
+                      ),
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(3.0),
+                      ),
+                    ),
+                    focusedBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.blue,
+                      ),
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(3.0),
+                      ),
+                    ),
+                    hintText: 'Enter valid until date here',
+                    labelText: 'Valid Until',
+                    errorText: validUntilInput.isEmpty
+                        ? null
+                        : !dateFormat.hasMatch(validUntilInput)
+                            ? "valid format is : yyyy-mm-dd"
+                            : null,
+                  ),
+                )
+              : Container(),
         ],
       ),
     );

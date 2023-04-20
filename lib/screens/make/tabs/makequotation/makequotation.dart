@@ -6,28 +6,26 @@ import 'package:wuusu_shop_client/alert.dart';
 import 'package:wuusu_shop_client/apicall.dart';
 import 'package:wuusu_shop_client/dropdowns/dropdownselector_products.dart';
 import 'package:wuusu_shop_client/pdfviewer/pdfviewer.dart';
-import 'package:wuusu_shop_client/screens/make/tabs/makesale/rightmenu.dart';
-import 'package:wuusu_shop_client/screens/make/tabs/makesale/datagrid.dart';
-import 'package:wuusu_shop_client/screens/make/tabs/makesale/gridsource.dart';
+import 'package:wuusu_shop_client/screens/make/tabs/makequotation/rightmenu.dart';
+import 'package:wuusu_shop_client/screens/make/tabs/makequotation/datagrid.dart';
+import 'package:wuusu_shop_client/screens/make/tabs/makequotation/gridsource.dart';
 
-class MakeSale extends StatefulWidget {
+class MakeQuotation extends StatefulWidget {
   final ApiCall apiCall;
   final onClose;
   Map? itemToEdit;
-  Map? itemToSale;
 
-  MakeSale({
+  MakeQuotation({
     required this.apiCall,
     required this.onClose,
     this.itemToEdit,
-    this.itemToSale,
   });
 
   @override
-  State<StatefulWidget> createState() => _MakeSaleState();
+  State<StatefulWidget> createState() => _MakeQuotationState();
 }
 
-class _MakeSaleState extends State<MakeSale> {
+class _MakeQuotationState extends State<MakeQuotation> {
   bool isDisposed = false;
 
   bool isDoing = false;
@@ -46,6 +44,7 @@ class _MakeSaleState extends State<MakeSale> {
   late GridSource gridSource;
 
   String title = "";
+  String? validuntil;
   int? customer_id;
 
   safeCall(func) {
@@ -53,7 +52,7 @@ class _MakeSaleState extends State<MakeSale> {
     func();
   }
 
-  doCreate(Map sale) async {
+  doCreate(Map quotation) async {
     safeCall(() {
       setState(() {
         isDoing = true;
@@ -61,11 +60,12 @@ class _MakeSaleState extends State<MakeSale> {
     });
 
     try {
-      Map? data = await widget.apiCall.post('/sales').object(sale).call();
+      Map? data =
+          await widget.apiCall.post('/quotations').object(quotation).call();
 
       safeCall(() {
         setState(() {
-          doneResult = data!['sale'];
+          doneResult = data!['quotation'];
         });
       });
     } catch (e) {
@@ -76,7 +76,7 @@ class _MakeSaleState extends State<MakeSale> {
     }
   }
 
-  doEdit(Map sale) async {
+  doEdit(Map quotation) async {
     safeCall(() {
       setState(() {
         isDoing = true;
@@ -85,8 +85,8 @@ class _MakeSaleState extends State<MakeSale> {
 
     try {
       Map? data = await widget.apiCall
-          .patch('/sales/${widget.itemToEdit!['invoice_id']}')
-          .object(sale)
+          .patch('/quotations/${widget.itemToEdit!['invoice_id']}')
+          .object(quotation)
           .call();
 
       safeCall(() {
@@ -108,33 +108,12 @@ class _MakeSaleState extends State<MakeSale> {
 
     List items = [];
 
-    //### for Edit Sale
     if (widget.itemToEdit != null) {
       title = widget.itemToEdit!['title'] ?? "";
+      validuntil = widget.itemToEdit!['validuntil'];
       customer_id = widget.itemToEdit!['customer']['id'];
 
-      items = (widget.itemToEdit!['sale_data'] as List)
-          .map((row) => {
-                'id': row['product_id'],
-                'itemcode': row['itemcode'],
-                'description': row['description'],
-                'unitprice': row['unitprice'],
-                'qty': row['qty'],
-                'discount': row['discount'],
-                'total': double.parse(
-                    ((double.parse(row['unitprice']) * int.parse(row['qty'])) -
-                            double.parse(row['discount']))
-                        .toStringAsFixed(2)),
-              })
-          .toList();
-    }
-
-    // for Convert Quotation to Sale
-    if (widget.itemToSale != null) {
-      title = widget.itemToSale!['title'] ?? "";
-      customer_id = widget.itemToSale!['customer']['id'];
-
-      items = (widget.itemToSale!['quotation_data'] as List)
+      items = (widget.itemToEdit!['quotation_data'] as List)
           .map((row) => {
                 'id': row['product_id'],
                 'itemcode': row['itemcode'],
@@ -230,8 +209,8 @@ class _MakeSaleState extends State<MakeSale> {
                           children: [
                             Text(
                               widget.itemToEdit == null
-                                  ? "Create Sale"
-                                  : "Edit Sale : ${widget.itemToEdit!['invoice_id']}",
+                                  ? "Create Quotation"
+                                  : "Edit Quotation : ${widget.itemToEdit!['invoice_id']}",
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
@@ -283,8 +262,8 @@ class _MakeSaleState extends State<MakeSale> {
                                       Radius.circular(3.0),
                                     ),
                                   ),
-                                  hintText: 'Enter sale title here.',
-                                  label: Text("Sale Title"),
+                                  hintText: 'Enter quotation title here.',
+                                  label: Text("Quotation Title"),
                                 ),
                               )
                             : Container(),
@@ -311,19 +290,21 @@ class _MakeSaleState extends State<MakeSale> {
                             Spacer(),
                             FilledButton(
                               onPressed: customer_id == null ||
+                                      validuntil == null ||
                                       gridSource.rows.isEmpty ||
                                       isDoing
                                   ? null
                                   : () {
-                                      Map sale = {};
+                                      Map quotation = {};
 
-                                      sale['customer_id'] = customer_id;
+                                      quotation['customer_id'] = customer_id;
+                                      quotation['validuntil'] = validuntil;
 
                                       if (title.trim().isNotEmpty) {
-                                        sale['title'] = title.trim();
+                                        quotation['title'] = title.trim();
                                       }
 
-                                      List sale_data = gridSource.rows
+                                      List quotation_data = gridSource.rows
                                           .map((DataGridRow row) => {
                                                 'product_id':
                                                     row.getCells()[0].value,
@@ -333,14 +314,14 @@ class _MakeSaleState extends State<MakeSale> {
                                               })
                                           .toList();
 
-                                      sale['sale_data'] =
-                                          json.encode(sale_data);
+                                      quotation['quotation_data'] =
+                                          json.encode(quotation_data);
 
                                       if (widget.itemToEdit == null) {
-                                        doCreate(sale);
+                                        doCreate(quotation);
                                       } else {
-                                        sale.remove('customer_id');
-                                        doEdit(sale);
+                                        quotation.remove('customer_id');
+                                        doEdit(quotation);
                                       }
                                     },
                               child: !isDoing
@@ -407,9 +388,15 @@ class _MakeSaleState extends State<MakeSale> {
                         customer_id = customer['id'];
                       });
                     },
+                    onValidUntilSelected: (date) {
+                      setState(() {
+                        validuntil = date;
+                        print(validuntil);
+                      });
+                    },
                     apiCall: widget.apiCall,
-                    hideCustomerSelector:
-                        widget.itemToEdit != null || widget.itemToSale != null,
+                    hideCustomerSelector: widget.itemToEdit != null,
+                    hideValidUntil: widget.itemToEdit != null,
                   ),
                 ),
               ],

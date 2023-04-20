@@ -1,0 +1,106 @@
+import 'package:blurrycontainer/blurrycontainer.dart';
+import 'package:flutter/material.dart';
+import 'package:syncfusion_flutter_datagrid/datagrid.dart';
+
+class DataGrid extends StatefulWidget {
+  final List columnNames;
+  final DataGridSource source;
+  final onClickDelete;
+
+  DataGrid({
+    required this.columnNames,
+    required this.source,
+    required this.onClickDelete,
+  });
+
+  @override
+  State<StatefulWidget> createState() => _DataGridState();
+}
+
+class _DataGridState extends State<DataGrid> {
+  late Map<String, double> columnWidths = {};
+
+  //### Ex: convert 'this_is_name' to 'This Is Name'
+  String getColumnLabel(String columnName) {
+    List slices = columnName.split('_');
+    String name = "";
+    for (int i = 0; i < slices.length; i++) {
+      slices[i] =
+          slices[i][0].toUpperCase() + slices[i].substring(1).toLowerCase();
+    }
+    return slices.join(' ');
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    for (var colName in widget.columnNames) {
+      columnWidths[colName] = double.nan;
+    }
+  }
+
+  @override
+  Widget build(Object context) {
+    return SfDataGrid(
+      source: widget.source,
+      columnWidthMode: ColumnWidthMode.auto,
+      frozenColumnsCount: 2,
+      allowSorting: true,
+      allowMultiColumnSorting: true,
+      allowColumnsResizing: true,
+      allowSwiping: true,
+      swipeMaxOffset: 100.0,
+      startSwipeActionsBuilder: (
+        BuildContext context,
+        DataGridRow row,
+        int rowIndex,
+      ) {
+        return Row(
+          children: [
+            const Spacer(),
+            IconButton(
+              onPressed: () {
+                widget.onClickDelete(row.getCells()[0].value);
+              },
+              color: Colors.red,
+              icon: const Icon(Icons.delete),
+            ),
+          ],
+        );
+      },
+      onColumnResizeUpdate: (ColumnResizeUpdateDetails details) {
+        setState(() {
+          columnWidths[details.column.columnName] = details.width;
+        });
+        return true;
+      },
+      tableSummaryRows: [
+        GridTableSummaryRow(
+            showSummaryInRow: true,
+            title: 'Total Payable: Rs.{Sum}',
+            columns: [
+              GridSummaryColumn(
+                name: 'Sum',
+                columnName: 'total',
+                summaryType: GridSummaryType.sum,
+              )
+            ],
+            position: GridTableSummaryRowPosition.bottom)
+      ],
+      columns: <GridColumn>[
+        for (String columnName in widget.columnNames)
+          GridColumn(
+            columnName: columnName,
+            width: columnWidths[columnName]!,
+            label: Container(
+              padding: const EdgeInsets.all(16.0),
+              alignment: Alignment.center,
+              child: Text(
+                getColumnLabel(columnName),
+              ),
+            ),
+          )
+      ],
+    );
+  }
+}
