@@ -10,4 +10,8 @@ class Storage {
   Future<String?> read(String key) async {
     return await storage.read(key: key);
   }
+
+  delete(String key) async {
+    return await storage.delete(key: key);
+  }
 }

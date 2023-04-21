@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:wuusu_shop_client/alert.dart';
 import 'package:wuusu_shop_client/apicall.dart';
 import 'package:wuusu_shop_client/main.dart';
 import 'package:wuusu_shop_client/screens/inventory/inventory.dart';
+import 'package:wuusu_shop_client/screens/login.dart';
 import 'package:wuusu_shop_client/screens/make/make.dart';
 import 'package:wuusu_shop_client/screens/reports/reports.dart';
 import 'package:wuusu_shop_client/screens/stock/stock.dart';
+import 'package:wuusu_shop_client/storage.dart';
 
 class HomeScreen extends StatefulWidget {
   final ApiCall apiCall;
@@ -26,29 +29,37 @@ class _HomeScreenState extends State<HomeScreen> {
     ["Stock", Icons.list],
     ["Reports", Icons.document_scanner],
     ["Make", Icons.create],
-    ["Users", Icons.group]
+    //["Users", Icons.group]
   ];
 
   int selectedSideMenuItem = -1;
 
-  test() async {
-    try {
-      Map? data = await widget.apiCall.get("/products").call();
-      print(data);
-    } catch (e) {
-      print(e.toString());
-    }
+  logout(BuildContext context) {
+    Storage storage = Storage();
+
+    storage.delete("token");
+
+    openLoginScreen(context);
+  }
+
+  openLoginScreen(BuildContext context) {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (BuildContext context) => LoginScreen(),
+      ),
+    );
   }
 
   @override
-  Widget build(Object context) {
+  Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SideMenu(
-              user: {'name': 'Tharusha Udana', 'id': '01'},
+              //user: {'name': 'Tharusha Udana', 'id': '01'},
+              user: widget.user,
               sideMenuItems: sideMenuItems,
               onItemClick: (int i) {
                 setState(() {
@@ -56,7 +67,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 });
               },
               onLogoutClick: () {
-                test();
+                Alert.showConfirm(
+                  "Close This Section",
+                  "Are you sure?",
+                  context,
+                  (dialog) {
+                    dialog.close();
+                    logout(context);
+                  },
+                );
               },
             ),
             selectedSideMenuItem == -1

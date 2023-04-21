@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:wuusu_shop_client/pdfviewer/pdfviewer.dart';
 import 'package:wuusu_shop_client/screens/home.dart';
 import 'package:wuusu_shop_client/storage.dart';
 import './screens/login.dart';
@@ -15,7 +14,7 @@ void main() async {
 
   runApp(
     ChangeNotifierProvider(
-      create: (_) => ThemeModeNotifier(mode != null ? mode : 'dark'),
+      create: (_) => ThemeModeNotifier(mode != null ? mode : 'light'),
       child: MyApp(),
     ),
   );
@@ -27,7 +26,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Wuusu Fashion Desktop Client',
       theme: Provider.of<ThemeModeNotifier>(context).isDarkMode
           ? ThemeData.dark()
           : ThemeData(
@@ -59,14 +58,14 @@ class _MyHomePageState extends State<MyHomePage> {
 
     apiCall.setToken(token);
 
-    /*try {
+    try {
       Map? data = await apiCall.get("/me").call();
       return data!["user"];
     } catch (e) {
       return null;
-    }*/
+    }
 
-    return {};
+    //return {};
   }
 
   @override
@@ -75,27 +74,28 @@ class _MyHomePageState extends State<MyHomePage> {
       width: 400,
       height: 300,
       child: Scaffold(
-          body: FutureBuilder(
-        future: checkIsLogged(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          } else {
-            Map? user = snapshot.data;
-
-            if (user != null) {
-              return HomeScreen(
-                apiCall: apiCall,
-                user: user,
+        body: FutureBuilder(
+          future: checkIsLogged(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(
+                child: CircularProgressIndicator(),
               );
             } else {
-              return LoginScreen();
+              Map? user = snapshot.data;
+
+              if (user != null) {
+                return HomeScreen(
+                  apiCall: apiCall,
+                  user: user,
+                );
+              } else {
+                return LoginScreen();
+              }
             }
-          }
-        },
-      )),
+          },
+        ),
+      ),
     );
   }
 }

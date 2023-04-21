@@ -24,20 +24,6 @@ class _LoginScreenState extends State<LoginScreen> {
       isLogging = true;
     });
 
-    /*apiCall.post("/login").data("email", email).data("password", password).on(
-      success: (Map? data) async {
-        await storage.save("token", data!["token"]);
-        apiCall.setToken(data["token"]);
-        openHomeScreen(context, data["user"]);
-      },
-      error: (String msg) {
-        setState(() {
-          isLogging = false;
-        });
-        Alert.show("Login failed", msg, context);
-      },
-    );*/
-
     try {
       Map? data = await apiCall
           .post("/login")
@@ -52,6 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() {
         isLogging = false;
       });
+
       Alert.show("Login failed", e.toString(), context);
     }
   }
