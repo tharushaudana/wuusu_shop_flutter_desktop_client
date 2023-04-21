@@ -160,11 +160,12 @@ class SideMenu extends StatefulWidget {
   final onItemClick;
   final onLogoutClick;
 
-  SideMenu(
-      {required this.user,
-      required this.sideMenuItems,
-      required this.onItemClick,
-      required this.onLogoutClick});
+  SideMenu({
+    required this.user,
+    required this.sideMenuItems,
+    required this.onItemClick,
+    required this.onLogoutClick,
+  });
 
   @override
   State<StatefulWidget> createState() => _SideMenuState();

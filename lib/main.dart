@@ -14,7 +14,7 @@ void main() async {
 
   runApp(
     ChangeNotifierProvider(
-      create: (_) => ThemeModeNotifier(mode != null ? mode : 'light'),
+      create: (_) => ThemeModeNotifier(mode ?? 'light'),
       child: MyApp(),
     ),
   );
