@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wuusu_shop_client/alert.dart';
@@ -67,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 });
               },
               onLogoutClick: () {
-                Alert.showConfirm(
+                /*Alert.showConfirm(
                   "Close This Section",
                   "Are you sure?",
                   context,
@@ -75,7 +77,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     dialog.close();
                     logout(context);
                   },
-                );
+                );*/
+                print(Platform.version);
               },
             ),
             selectedSideMenuItem == -1

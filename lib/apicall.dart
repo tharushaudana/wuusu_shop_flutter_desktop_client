@@ -1,8 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 
-final String API_URL = "https://indev.ctec.lk/wuusu_shop_ctec/public/api";
+final String API_URL = "https://indev.ctec.lk/wuusu_shop_ctec/api";
 
 class ApiCall {
   String? _token = null;
@@ -34,9 +35,12 @@ class ApiRequest {
   final String path;
   final String method;
 
-  Map<String, String> _headers = {
+  final Map<String, String> _headers = {
     "Accept": "application/vnd.api+json",
     //"Content-Type": "application/vnd.api+json",
+    "User-Hostname": Platform.localHostname,
+    "User-OperatingSystem": Platform.operatingSystem,
+    "User-OperatingSystemVersion": Platform.operatingSystemVersion,
   };
 
   Map<String, String> _params = {};
@@ -71,11 +75,6 @@ class ApiRequest {
     map.forEach((mkey, mvalue) => _data[mkey] = mvalue.toString());
     return this;
   }
-
-  /*Future<Map?> call() async {
-    Map? data = await _call();
-    return data;
-  }*/
 
   Future<Map?> call() async {
     http.StreamedResponse? response = await _call();
@@ -126,45 +125,6 @@ class ApiRequest {
 
     return response;
   }
-
-  /*Future<Map?> _call() async {
-    Request request = Request(
-        path: path,
-        params: this._params,
-        headers: this._headers,
-        data: this._data);
-
-    http.StreamedResponse? response = await request.call(method);
-
-    if (response == null) {
-      throw ApiException("Request failed. Unknown error!");
-    }
-
-    String str = await response.stream.bytesToString();
-
-    //print(str);
-
-    Map jmap = {};
-
-    try {
-      jmap = json.decode(str);
-    } catch (e) {
-      throw ApiException("Invalid response. Can't decode!");
-    }
-
-    if (jmap["status"] == "success") {
-      return jmap["data"];
-    } else if (jmap["status"] == "error") {
-      Map? errors = jmap["errors"];
-
-      if (errors == null) throw ApiException(jmap["message"]);
-
-      throw ApiException(errors[errors.keys.first][0]
-          .toString()); //### throw first error of errors.
-    } else {
-      throw ApiException("Invalid response. Can't find expected status!");
-    }
-  }*/
 }
 
 class Request {
