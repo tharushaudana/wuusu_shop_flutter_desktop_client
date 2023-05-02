@@ -69,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 });
               },
               onLogoutClick: () {
-                /*Alert.showConfirm(
+                Alert.showConfirm(
                   "Close This Section",
                   "Are you sure?",
                   context,
@@ -77,8 +77,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     dialog.close();
                     logout(context);
                   },
-                );*/
-                print(Platform.version);
+                );
+                //print(Platform.version);
               },
             ),
             selectedSideMenuItem == -1

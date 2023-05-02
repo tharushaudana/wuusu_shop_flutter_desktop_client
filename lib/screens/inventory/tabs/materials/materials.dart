@@ -68,7 +68,7 @@ class _MaterialsState extends State<Materials> {
 
         setState(() => isFetching = false);
 
-        Alert.show("Fetching Failed", e.toString(), context);
+        //Alert.show("Fetching Failed", e.toString(), context);
       });
     }
 
